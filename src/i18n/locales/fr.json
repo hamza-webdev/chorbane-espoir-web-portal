@@ -1,0 +1,103 @@
+
+{
+  "common": {
+    "loading": "Chargement...",
+    "error": "Erreur",
+    "save": "Enregistrer",
+    "cancel": "Annuler",
+    "delete": "Supprimer",
+    "edit": "Modifier",
+    "add": "Ajouter",
+    "close": "Fermer",
+    "yes": "Oui",
+    "no": "Non",
+    "search": "Rechercher",
+    "filter": "Filtrer",
+    "sort": "Trier",
+    "view": "Voir",
+    "dashboard": "Tableau de bord"
+  },
+  "header": {
+    "home": "Accueil",
+    "team": "Équipe",
+    "matches": "Matchs",
+    "news": "Actualités",
+    "galleries": "Galeries",
+    "contact": "Contact"
+  },
+  "hero": {
+    "title": "Espoir Sportif de Chorbane",
+    "subtitle": "Club de football tunisien fondé avec passion",
+    "discover_team": "Découvrir l'équipe",
+    "view_matches": "Voir les matchs"
+  },
+  "team": {
+    "title": "Notre Équipe",
+    "subtitle": "Découvrez nos joueurs et notre staff technique",
+    "players": "Joueurs",
+    "staff": "Staff Technique",
+    "age": "Âge",
+    "height": "Taille",
+    "weight": "Poids",
+    "position": "Position",
+    "jersey_number": "Numéro",
+    "years": "ans",
+    "cm": "cm",
+    "kg": "kg",
+    "joined": "Arrivé le",
+    "email": "Email",
+    "phone": "Tél"
+  },
+  "matches": {
+    "title": "Calendrier des Matchs",
+    "subtitle": "Suivez tous nos matchs et résultats",
+    "next_match": "Prochain Match",
+    "new_match": "Nouveau Match",
+    "home": "Domicile",
+    "away": "Extérieur",
+    "vs": "vs",
+    "status": {
+      "upcoming": "À venir",
+      "ongoing": "En cours",
+      "finished": "Terminé",
+      "postponed": "Reporté"
+    }
+  },
+  "news": {
+    "title": "Dernières Actualités",
+    "subtitle": "Restez informé de toute l'actualité du club",
+    "by": "Par",
+    "read_more": "Lire la suite"
+  },
+  "galleries": {
+    "title": "Galeries Photos",
+    "subtitle": "Revivez les moments forts du club",
+    "photos": "photos",
+    "view_photos": "Voir les photos"
+  },
+  "contact": {
+    "title": "Contactez-nous",
+    "subtitle": "Nous sommes là pour répondre à vos questions",
+    "info": "Informations de contact",
+    "address": "Chebba, Mahdia, Tunisie",
+    "hours": "Lun - Ven: 9h00 - 17h00",
+    "follow_us": "Suivez-nous",
+    "send_message": "Envoyez-nous un message",
+    "name": "Nom",
+    "subject": "Sujet",
+    "message": "Message",
+    "send": "Envoyer le message"
+  },
+  "reactions": {
+    "like": "J'aime",
+    "dislike": "Je n'aime pas",
+    "already_reacted": "Réaction déjà enregistrée",
+    "wait_24h": "Vous avez déjà réagi à cet élément. Attendez 24h avant de réagir à nouveau.",
+    "error": "Impossible d'enregistrer votre réaction."
+  },
+  "footer": {
+    "description": "Club de football tunisien fondé avec passion et dédié à l'excellence sportive.",
+    "navigation": "Navigation",
+    "rights": "Tous droits réservés."
+  }
+}

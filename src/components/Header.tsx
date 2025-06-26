@@ -1,19 +1,22 @@
 
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Menu, X, LogIn } from "lucide-react";
 import { Link } from "react-router-dom";
+import LanguageSelector from "./LanguageSelector";
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const { t } = useTranslation();
 
   const navigation = [
-    { name: "Accueil", href: "/" },
-    { name: "Équipe", href: "/equipe" },
-    { name: "Matchs", href: "/matchs" },
-    { name: "Actualités", href: "/actualites" },
-    { name: "Galeries", href: "/galeries" },
-    { name: "Contact", href: "/contact" }
+    { name: t('header.home'), href: "/" },
+    { name: t('header.team'), href: "/equipe" },
+    { name: t('header.matches'), href: "/matchs" },
+    { name: t('header.news'), href: "/actualites" },
+    { name: t('header.galleries'), href: "/galeries" },
+    { name: t('header.contact'), href: "/contact" }
   ];
 
   const toggleMenu = () => {
@@ -45,23 +48,27 @@ const Header = () => {
                 {item.name}
               </Link>
             ))}
+            <LanguageSelector />
             <Link to="/auth">
               <Button variant="outline" className="flex items-center gap-2">
                 <LogIn size={16} />
-                Dashboard
+                {t('common.dashboard')}
               </Button>
             </Link>
           </nav>
 
           {/* Mobile menu button */}
-          <Button
-            variant="ghost"
-            className="lg:hidden p-2"
-            onClick={toggleMenu}
-            aria-label="Toggle menu"
-          >
-            {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
-          </Button>
+          <div className="lg:hidden flex items-center gap-2">
+            <LanguageSelector />
+            <Button
+              variant="ghost"
+              className="p-2"
+              onClick={toggleMenu}
+              aria-label="Toggle menu"
+            >
+              {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
+            </Button>
+          </div>
         </div>
       </div>
 
@@ -95,7 +102,7 @@ const Header = () => {
                 >
                   <Button variant="outline" className="w-full flex items-center gap-2">
                     <LogIn size={16} />
-                    Dashboard
+                    {t('common.dashboard')}
                   </Button>
                 </Link>
               </div>

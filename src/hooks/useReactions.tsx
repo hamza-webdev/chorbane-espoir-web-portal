@@ -1,6 +1,7 @@
 
 import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useTranslation } from 'react-i18next';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 
@@ -27,6 +28,7 @@ const getUserIP = async (): Promise<string> => {
 export const useReactions = (entityType: 'article' | 'player' | 'staff' | 'match', entityId: string) => {
   const [userIP, setUserIP] = useState<string>('');
   const { toast } = useToast();
+  const { t } = useTranslation();
   const queryClient = useQueryClient();
 
   useEffect(() => {
@@ -99,8 +101,8 @@ export const useReactions = (entityType: 'article' | 'player' | 'staff' | 'match
     },
     onError: (error) => {
       toast({
-        title: "Erreur",
-        description: "Impossible d'enregistrer votre réaction.",
+        title: t('common.error'),
+        description: t('reactions.error'),
         variant: "destructive",
       });
     }
@@ -112,8 +114,8 @@ export const useReactions = (entityType: 'article' | 'player' | 'staff' | 'match
       const now = new Date();
       if (expiresAt > now) {
         toast({
-          title: "Réaction déjà enregistrée",
-          description: "Vous avez déjà réagi à cet élément. Attendez 24h avant de réagir à nouveau.",
+          title: t('reactions.already_reacted'),
+          description: t('reactions.wait_24h'),
           variant: "default",
         });
         return;
