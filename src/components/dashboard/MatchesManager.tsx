@@ -111,7 +111,7 @@ const MatchesManager = () => {
                 <div className="flex items-start justify-between">
                   <div className="flex-1">
                     <CardTitle className="text-lg">
-                      ESC vs {match.opponent_team}
+                      الأمل الرياضي بشربان vs {match.opponent_team}
                     </CardTitle>
                     <CardDescription className="flex items-center gap-2 mt-2">
                       <Badge variant={statusInfo.variant}>
