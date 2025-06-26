@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
-import { Menu, X, LogIn } from "lucide-react";
+import { Menu, X, LogIn, Heart } from "lucide-react";
 import { Link } from "react-router-dom";
 import LanguageSelector from "./LanguageSelector";
 
@@ -16,6 +16,7 @@ const Header = () => {
     { name: t('header.matches'), href: "/matchs" },
     { name: t('header.news'), href: "/actualites" },
     { name: t('header.galleries'), href: "/galeries" },
+    { name: t('donations.title'), href: "/donations" },
     { name: t('header.contact'), href: "/contact" }
   ];
 
@@ -38,13 +39,14 @@ const Header = () => {
           </div>
 
           {/* Desktop Navigation */}
-          <nav className="hidden lg:flex items-center space-x-8">
+          <nav className="hidden lg:flex items-center space-x-6">
             {navigation.map((item) => (
               <Link
                 key={item.name}
                 to={item.href}
-                className="text-gray-700 hover:text-green-600 font-medium transition-colors duration-200"
+                className="text-gray-700 hover:text-green-600 font-medium transition-colors duration-200 flex items-center gap-1"
               >
+                {item.href === "/donations" && <Heart size={16} className="text-red-500" />}
                 {item.name}
               </Link>
             ))}
@@ -89,9 +91,10 @@ const Header = () => {
                   <Link
                     key={item.name}
                     to={item.href}
-                    className="text-gray-700 hover:text-green-600 font-medium transition-colors duration-200 py-3 px-2 border-b border-gray-100 last:border-b-0"
+                    className="text-gray-700 hover:text-green-600 font-medium transition-colors duration-200 py-3 px-2 border-b border-gray-100 last:border-b-0 flex items-center gap-2"
                     onClick={toggleMenu}
                   >
+                    {item.href === "/donations" && <Heart size={16} className="text-red-500" />}
                     {item.name}
                   </Link>
                 ))}

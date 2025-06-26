@@ -84,6 +84,51 @@ export type Database = {
         }
         Relationships: []
       }
+      donations: {
+        Row: {
+          amount: number
+          created_at: string
+          currency: string
+          donor_email: string | null
+          donor_name: string
+          donor_phone: string | null
+          id: string
+          is_anonymous: boolean
+          message: string | null
+          payment_method: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          currency?: string
+          donor_email?: string | null
+          donor_name: string
+          donor_phone?: string | null
+          id?: string
+          is_anonymous?: boolean
+          message?: string | null
+          payment_method: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          currency?: string
+          donor_email?: string | null
+          donor_name?: string
+          donor_phone?: string | null
+          id?: string
+          is_anonymous?: boolean
+          message?: string | null
+          payment_method?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       galleries: {
         Row: {
           cover_image: string | null

@@ -15,7 +15,8 @@
     "filter": "Filtrer",
     "sort": "Trier",
     "view": "Voir",
-    "dashboard": "Tableau de bord"
+    "dashboard": "Tableau de bord",
+    "back": "Retour"
   },
   "header": {
     "home": "Accueil",
@@ -123,7 +124,15 @@
     "thank_you": "Merci pour votre soutien !",
     "processing": "Traitement en cours...",
     "success_message": "Votre don a été traité avec succès. Merci pour votre générosité !",
-    "error_message": "Une erreur s'est produite lors du traitement de votre don. Veuillez réessayer."
+    "error_message": "Une erreur s'est produite lors du traitement de votre don. Veuillez réessayer.",
+    "recent_donations": "Dons récents",
+    "recent_donations_desc": "Merci à tous nos généreux donateurs",
+    "anonymous_donor": "Donateur anonyme",
+    "no_donations": "Aucun don pour le moment",
+    "total_raised": "Total collecté",
+    "make_donation": "Soutenez notre club",
+    "message": "Message (optionnel)",
+    "message_placeholder": "Laissez un message de soutien..."
   },
   "reactions": {
     "like": "J'aime",

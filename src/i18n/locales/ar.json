@@ -15,7 +15,8 @@
     "filter": "تصفية",
     "sort": "ترتيب",
     "view": "عرض",
-    "dashboard": "لوحة التحكم"
+    "dashboard": "لوحة التحكم",
+    "back": "رجوع"
   },
   "header": {
     "home": "الرئيسية",
@@ -123,7 +124,15 @@
     "thank_you": "شكرا لدعمكم!",
     "processing": "جاري المعالجة...",
     "success_message": "تم معالجة تبرعكم بنجاح. شكرا لكرمكم!",
-    "error_message": "حدث خطأ أثناء معالجة تبرعكم. يرجى المحاولة مرة أخرى."
+    "error_message": "حدث خطأ أثناء معالجة تبرعكم. يرجى المحاولة مرة أخرى.",
+    "recent_donations": "التبرعات الأخيرة",
+    "recent_donations_desc": "شكرا لجميع المتبرعين الكرام",
+    "anonymous_donor": "متبرع مجهول",
+    "no_donations": "لا توجد تبرعات حاليا",
+    "total_raised": "المبلغ المجمع",
+    "make_donation": "ادعم ناديNا",
+    "message": "رسالة (اختيارية)",
+    "message_placeholder": "اترك رسالة دعم..."
   },
   "reactions": {
     "like": "أعجبني",
