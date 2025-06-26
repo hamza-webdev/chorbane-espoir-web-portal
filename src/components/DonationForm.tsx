@@ -11,12 +11,14 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useToast } from "@/hooks/use-toast";
 import { CreditCard, DollarSign } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { useQueryClient } from "@tanstack/react-query";
 
-const DonationForm = () => {
+interface DonationFormProps {
+  onDonationSuccess?: () => void;
+}
+
+const DonationForm = ({ onDonationSuccess }: DonationFormProps) => {
   const { t } = useTranslation();
   const { toast } = useToast();
-  const queryClient = useQueryClient();
   const [isProcessing, setIsProcessing] = useState(false);
   const [formData, setFormData] = useState({
     amount: "",
@@ -108,8 +110,10 @@ const DonationForm = () => {
         paymentMethod: ""
       });
 
-      // Invalidate and refetch donations query
-      await queryClient.invalidateQueries({ queryKey: ['donations'] });
+      // Call the callback to refresh the donations list
+      if (onDonationSuccess) {
+        onDonationSuccess();
+      }
       
     } catch (error) {
       console.error('Donation error:', error);
