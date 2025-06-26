@@ -1,10 +1,9 @@
-
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Calendar, MapPin, Users, Trophy, Camera, Mail, Phone, Clock, Plus } from "lucide-react";
+import { Calendar, MapPin, Users, Camera, Mail, Phone, Clock, Plus } from "lucide-react";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 import { useAuth } from "@/hooks/useAuth";
@@ -12,6 +11,7 @@ import { useState } from "react";
 import MatchDialog from "@/components/dashboard/MatchDialog";
 import Header from "@/components/Header";
 import GalleryModal from "@/components/GalleryModal";
+import ReactionButtons from "@/components/ReactionButtons";
 
 const Index = () => {
   const { isAuthenticated } = useAuth();
@@ -118,10 +118,8 @@ const Index = () => {
 
   return (
     <div className="min-h-screen">
-      {/* Utiliser le composant Header existant */}
       <Header />
 
-      {/* Contenu principal */}
       <main>
         {/* Section Accueil */}
         <section id="accueil" className="bg-gradient-to-r from-green-600 to-green-800 text-white">
@@ -176,9 +174,13 @@ const Index = () => {
                           {nextMatch.competitions.name}
                         </Badge>
                       )}
-                      <div className="text-sm text-gray-600">
+                      <div className="text-sm text-gray-600 mb-4">
                         {nextMatch.is_home ? 'Match à domicile' : 'Match à l\'extérieur'}
                       </div>
+                      <ReactionButtons 
+                        entityType="match" 
+                        entityId={nextMatch.id} 
+                      />
                     </div>
                   </CardContent>
                 </Card>
@@ -228,14 +230,19 @@ const Index = () => {
                         )}
                       </div>
                       <p className="text-green-600 capitalize mb-2">{player.position}</p>
-                      <div className="text-sm text-gray-600 space-y-1">
+                      <div className="text-sm text-gray-600 space-y-1 mb-3">
                         {player.age && <p>Âge: {player.age} ans</p>}
                         {player.height && <p>Taille: {player.height} cm</p>}
                         {player.weight && <p>Poids: {player.weight} kg</p>}
                       </div>
                       {player.bio && (
-                        <p className="text-gray-600 text-sm line-clamp-2 mt-2">{player.bio}</p>
+                        <p className="text-gray-600 text-sm line-clamp-2 mb-3">{player.bio}</p>
                       )}
+                      <ReactionButtons 
+                        entityType="player" 
+                        entityId={player.id} 
+                        size="sm"
+                      />
                     </CardContent>
                   </Card>
                 ))}
@@ -278,8 +285,13 @@ const Index = () => {
                         )}
                       </div>
                       {member.bio && (
-                        <p className="text-gray-600 text-sm line-clamp-3">{member.bio}</p>
+                        <p className="text-gray-600 text-sm line-clamp-3 mb-3">{member.bio}</p>
                       )}
+                      <ReactionButtons 
+                        entityType="staff" 
+                        entityId={member.id} 
+                        size="sm"
+                      />
                     </CardContent>
                   </Card>
                 ))}
@@ -327,7 +339,7 @@ const Index = () => {
                       </CardDescription>
                     </CardHeader>
                     <CardContent>
-                      <div className="flex justify-between items-center">
+                      <div className="flex justify-between items-center mb-4">
                         <div className="space-y-2">
                           <Badge variant={statusInfo.variant}>
                             {statusInfo.label}
@@ -345,6 +357,11 @@ const Index = () => {
                           )}
                         </div>
                       </div>
+                      <ReactionButtons 
+                        entityType="match" 
+                        entityId={match.id} 
+                        size="sm"
+                      />
                     </CardContent>
                   </Card>
                 );
@@ -382,10 +399,15 @@ const Index = () => {
                     {article.excerpt && (
                       <p className="text-gray-600 mb-4 line-clamp-3">{article.excerpt}</p>
                     )}
-                    <div className="flex justify-between items-center text-sm text-gray-500">
+                    <div className="flex justify-between items-center text-sm text-gray-500 mb-4">
                       <span>{format(new Date(article.created_at), 'dd MMM yyyy', { locale: fr })}</span>
                       {article.author && <span>Par {article.author}</span>}
                     </div>
+                    <ReactionButtons 
+                      entityType="article" 
+                      entityId={article.id} 
+                      size="sm"
+                    />
                   </CardContent>
                 </Card>
               ))}
@@ -452,7 +474,6 @@ const Index = () => {
             </div>
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
-              {/* Informations de contact */}
               <div>
                 <h3 className="text-xl font-bold mb-6">Informations de contact</h3>
                 <div className="space-y-4">
@@ -484,7 +505,6 @@ const Index = () => {
                 </div>
               </div>
               
-              {/* Formulaire de contact */}
               <div>
                 <h3 className="text-xl font-bold mb-6">Envoyez-nous un message</h3>
                 <form className="space-y-4">
@@ -556,7 +576,6 @@ const Index = () => {
         </div>
       </footer>
 
-      {/* Dialog pour nouveau match */}
       {isAuthenticated && (
         <MatchDialog
           open={matchDialogOpen}
@@ -564,7 +583,6 @@ const Index = () => {
         />
       )}
 
-      {/* Modal pour galerie */}
       <GalleryModal
         gallery={selectedGallery}
         open={galleryModalOpen}

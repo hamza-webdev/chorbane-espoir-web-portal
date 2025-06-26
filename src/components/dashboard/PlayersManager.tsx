@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Plus, Edit, Trash2, Users } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import PlayerDialog from "./PlayerDialog";
+import ReactionButtons from "@/components/ReactionButtons";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 
 const PlayersManager = () => {
@@ -141,6 +142,16 @@ const PlayersManager = () => {
                   {player.bio}
                 </p>
               )}
+              
+              {/* Boutons de réaction */}
+              <div className="mb-4">
+                <ReactionButtons 
+                  entityType="player" 
+                  entityId={player.id} 
+                  size="sm"
+                />
+              </div>
+
               <div className="flex flex-col sm:flex-row gap-2">
                 <Button
                   variant="outline"

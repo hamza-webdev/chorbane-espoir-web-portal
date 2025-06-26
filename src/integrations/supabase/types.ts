@@ -292,12 +292,53 @@ export type Database = {
         }
         Relationships: []
       }
+      user_reactions: {
+        Row: {
+          created_at: string
+          entity_id: string
+          entity_type: string
+          expires_at: string
+          id: string
+          reaction_type: string
+          user_ip: string
+        }
+        Insert: {
+          created_at?: string
+          entity_id: string
+          entity_type: string
+          expires_at?: string
+          id?: string
+          reaction_type: string
+          user_ip: string
+        }
+        Update: {
+          created_at?: string
+          entity_id?: string
+          entity_type?: string
+          expires_at?: string
+          id?: string
+          reaction_type?: string
+          user_ip?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
-      [_ in never]: never
+      reaction_counts: {
+        Row: {
+          dislikes_count: number | null
+          entity_id: string | null
+          entity_type: string | null
+          likes_count: number | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
-      [_ in never]: never
+      cleanup_expired_reactions: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
     }
     Enums: {
       competition_type: "championnat" | "coupe" | "amical" | "autre"

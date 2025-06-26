@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -8,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Plus, Edit, Trash2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import MatchDialog from "./MatchDialog";
+import ReactionButtons from "@/components/ReactionButtons";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 
@@ -148,6 +148,16 @@ const MatchesManager = () => {
                     <strong>Notes:</strong> {match.notes}
                   </p>
                 )}
+                
+                {/* Boutons de réaction */}
+                <div className="mb-4">
+                  <ReactionButtons 
+                    entityType="match" 
+                    entityId={match.id} 
+                    size="sm"
+                  />
+                </div>
+
                 <div className="flex gap-2">
                   <Button
                     variant="outline"

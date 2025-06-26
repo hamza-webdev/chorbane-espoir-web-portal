@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -8,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Plus, Edit, Trash2, FileText } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import ArticleDialog from "./ArticleDialog";
+import ReactionButtons from "@/components/ReactionButtons";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 
@@ -132,6 +132,16 @@ const ArticlesManager = () => {
               {article.author && (
                 <p className="text-xs text-gray-500 mb-4">Par {article.author}</p>
               )}
+              
+              {/* Boutons de réaction */}
+              <div className="mb-4">
+                <ReactionButtons 
+                  entityType="article" 
+                  entityId={article.id} 
+                  size="sm"
+                />
+              </div>
+
               <div className="flex flex-col sm:flex-row gap-2">
                 <Button
                   variant="outline"
