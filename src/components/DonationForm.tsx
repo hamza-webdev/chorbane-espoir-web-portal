@@ -11,10 +11,12 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useToast } from "@/hooks/use-toast";
 import { CreditCard, DollarSign } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { useQueryClient } from "@tanstack/react-query";
 
 const DonationForm = () => {
   const { t } = useTranslation();
   const { toast } = useToast();
+  const queryClient = useQueryClient();
   const [isProcessing, setIsProcessing] = useState(false);
   const [formData, setFormData] = useState({
     amount: "",
@@ -66,8 +68,10 @@ const DonationForm = () => {
     setIsProcessing(true);
 
     try {
+      console.log('Submitting donation:', formData);
+      
       // Insert donation into database
-      const { error } = await supabase
+      const { data, error } = await supabase
         .from('donations')
         .insert({
           donor_name: formData.isAnonymous ? 'Donateur anonyme' : formData.donorName,
@@ -78,9 +82,15 @@ const DonationForm = () => {
           is_anonymous: formData.isAnonymous,
           message: formData.message || null,
           status: 'completed' // For demo purposes, we'll mark as completed
-        });
+        })
+        .select();
 
-      if (error) throw error;
+      if (error) {
+        console.error('Donation error:', error);
+        throw error;
+      }
+
+      console.log('Donation created:', data);
 
       toast({
         title: t("donations.thank_you"),
@@ -98,8 +108,9 @@ const DonationForm = () => {
         paymentMethod: ""
       });
 
-      // Refresh the page to show the new donation
-      window.location.reload();
+      // Invalidate and refetch donations query
+      await queryClient.invalidateQueries({ queryKey: ['donations'] });
+      
     } catch (error) {
       console.error('Donation error:', error);
       toast({

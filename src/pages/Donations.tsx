@@ -1,4 +1,3 @@
-
 import { useQuery } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 import { supabase } from "@/integrations/supabase/client";
@@ -17,16 +16,22 @@ const Donations = () => {
   const { t, i18n } = useTranslation();
   const dateLocale = i18n.language === 'ar' ? ar : fr;
 
-  const { data: donations, isLoading } = useQuery({
+  const { data: donations, isLoading, error } = useQuery({
     queryKey: ['donations'],
     queryFn: async () => {
+      console.log('Fetching donations...');
       const { data, error } = await supabase
         .from('donations')
         .select('*')
         .eq('status', 'completed')
         .order('created_at', { ascending: false });
       
-      if (error) throw error;
+      if (error) {
+        console.error('Error fetching donations:', error);
+        throw error;
+      }
+      
+      console.log('Donations fetched:', data);
       return data;
     }
   });
@@ -58,7 +63,15 @@ const Donations = () => {
     }
   ];
 
-  const totalAmount = donations?.reduce((sum, donation) => sum + parseFloat(donation.amount.toString()), 0) || 0;
+  const totalAmount = donations?.reduce((sum, donation) => {
+    const amount = typeof donation.amount === 'string' 
+      ? parseFloat(donation.amount) 
+      : Number(donation.amount);
+    return sum + (isNaN(amount) ? 0 : amount);
+  }, 0) || 0;
+
+  console.log('Total amount calculated:', totalAmount);
+  console.log('Donations data:', donations);
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -105,6 +118,11 @@ const Donations = () => {
                   <p className="text-sm text-green-700">
                     {t("donations.total_raised", "Total collecté")}
                   </p>
+                  {donations && (
+                    <p className="text-xs text-green-600 mt-1">
+                      {donations.length} donation(s) reçue(s)
+                    </p>
+                  )}
                 </div>
               </CardContent>
             </Card>
@@ -116,7 +134,32 @@ const Donations = () => {
               </CardHeader>
               <CardContent>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  {fundUsageItems.map((item, index) => {
+                  {[
+                    {
+                      icon: Users,
+                      title: t("donations.equipment"),
+                      description: t("donations.equipment_desc"),
+                      color: "text-blue-600"
+                    },
+                    {
+                      icon: Building,
+                      title: t("donations.infrastructure"),
+                      description: t("donations.infrastructure_desc"),
+                      color: "text-green-600"
+                    },
+                    {
+                      icon: GraduationCap,
+                      title: t("donations.training"),
+                      description: t("donations.training_desc"),
+                      color: "text-purple-600"
+                    },
+                    {
+                      icon: Car,
+                      title: t("donations.transport"),
+                      description: t("donations.transport_desc"),
+                      color: "text-orange-600"
+                    }
+                  ].map((item, index) => {
                     const Icon = item.icon;
                     return (
                       <div key={index} className="flex items-start gap-3 p-3 bg-gray-50 rounded-lg">
@@ -145,31 +188,45 @@ const Donations = () => {
                   <div className="text-center py-4">
                     <p className="text-gray-600">{t("common.loading")}</p>
                   </div>
+                ) : error ? (
+                  <div className="text-center py-4">
+                    <p className="text-red-600">Erreur lors du chargement des donations</p>
+                    <p className="text-sm text-gray-500">{error.message}</p>
+                  </div>
                 ) : donations && donations.length > 0 ? (
                   <div className="space-y-3 max-h-96 overflow-y-auto">
-                    {donations.map((donation) => (
-                      <div key={donation.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                        <div>
-                          <p className="font-medium">
-                            {donation.is_anonymous ? t("donations.anonymous_donor", "Donateur anonyme") : donation.donor_name}
-                          </p>
-                          <p className="text-sm text-gray-600">
-                            {format(new Date(donation.created_at), 'dd MMM yyyy', { locale: dateLocale })}
-                          </p>
-                          {donation.message && (
-                            <p className="text-sm text-gray-700 italic mt-1">"{donation.message}"</p>
-                          )}
+                    {donations.map((donation) => {
+                      const amount = typeof donation.amount === 'string' 
+                        ? parseFloat(donation.amount) 
+                        : Number(donation.amount);
+                      
+                      return (
+                        <div key={donation.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                          <div>
+                            <p className="font-medium">
+                              {donation.is_anonymous ? t("donations.anonymous_donor", "Donateur anonyme") : donation.donor_name}
+                            </p>
+                            <p className="text-sm text-gray-600">
+                              {format(new Date(donation.created_at), 'dd MMM yyyy', { locale: dateLocale })}
+                            </p>
+                            {donation.message && (
+                              <p className="text-sm text-gray-700 italic mt-1">"{donation.message}"</p>
+                            )}
+                          </div>
+                          <Badge variant="outline" className="text-green-600 border-green-200">
+                            {isNaN(amount) ? '0.00' : amount.toFixed(2)} {donation.currency}
+                          </Badge>
                         </div>
-                        <Badge variant="outline" className="text-green-600 border-green-200">
-                          {parseFloat(donation.amount.toString()).toFixed(2)} {donation.currency}
-                        </Badge>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 ) : (
                   <div className="text-center py-8">
                     <Heart className="h-12 w-12 text-gray-400 mx-auto mb-4" />
                     <p className="text-gray-600">{t("donations.no_donations", "Aucun don pour le moment")}</p>
+                    <p className="text-sm text-gray-500 mt-2">
+                      Les donations seront affichées ici une fois effectuées
+                    </p>
                   </div>
                 )}
               </CardContent>
