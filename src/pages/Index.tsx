@@ -323,7 +323,7 @@ const Index = () => {
                       <p className="text-green-600">{player.position}</p>
                       <div className="mt-2 text-sm text-gray-600">
                         <p>Âge: {player.age || 'N/A'}</p>
-                        <p>Nationalité: {player.nationality || 'Tunisie'}</p>
+                        <p>Taille: {player.height ? `${player.height} cm` : 'N/A'}</p>
                       </div>
                     </CardContent>
                   </Card>
@@ -392,7 +392,7 @@ const Index = () => {
                           </Badge>
                           {match.status === 'termine' && (
                             <div className="text-lg font-bold">
-                              {match.home_score} - {match.away_score}
+                              {match.our_score} - {match.opponent_score}
                             </div>
                           )}
                         </div>
@@ -428,7 +428,7 @@ const Index = () => {
                     <div className="h-48 bg-gray-200 flex items-center justify-center">
                       {gallery.photos && gallery.photos[0] ? (
                         <img 
-                          src={gallery.photos[0].url} 
+                          src={gallery.photos[0].image_url} 
                           alt={gallery.title}
                           className="w-full h-full object-cover"
                         />
