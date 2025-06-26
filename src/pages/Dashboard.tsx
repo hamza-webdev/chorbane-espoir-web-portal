@@ -1,4 +1,5 @@
 
+import { useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Users, FileText, Trophy, Calendar, Camera, UserCheck } from "lucide-react";
 import ArticlesManager from "@/components/dashboard/ArticlesManager";
@@ -8,17 +9,24 @@ import MatchesManager from "@/components/dashboard/MatchesManager";
 import CompetitionsManager from "@/components/dashboard/CompetitionsManager";
 import GalleriesManager from "@/components/dashboard/GalleriesManager";
 import DashboardHeader from "@/components/DashboardHeader";
+import MobileDashboardSidebar from "@/components/MobileDashboardSidebar";
 import ProtectedRoute from "@/components/ProtectedRoute";
 
 const Dashboard = () => {
+  const [activeTab, setActiveTab] = useState("articles");
+
   return (
     <ProtectedRoute>
       <div className="min-h-screen bg-gray-50">
         <DashboardHeader />
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-8">
-          <Tabs defaultValue="articles" className="space-y-4 sm:space-y-6">
-            <TabsList className="grid w-full grid-cols-3 md:grid-cols-6 lg:grid-cols-6 h-auto">
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4 sm:space-y-6">
+            {/* Mobile Sidebar */}
+            <MobileDashboardSidebar activeTab={activeTab} onTabChange={setActiveTab} />
+
+            {/* Desktop Tabs */}
+            <TabsList className="hidden md:grid w-full grid-cols-3 md:grid-cols-6 lg:grid-cols-6 h-auto">
               <TabsTrigger value="articles" className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm p-2 sm:p-3">
                 <FileText size={14} className="sm:size-4" />
                 <span className="hidden sm:inline">Articles</span>
