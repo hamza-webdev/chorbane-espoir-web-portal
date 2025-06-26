@@ -58,7 +58,7 @@ const Donations = () => {
     }
   ];
 
-  const totalAmount = donations?.reduce((sum, donation) => sum + parseFloat(donation.amount), 0) || 0;
+  const totalAmount = donations?.reduce((sum, donation) => sum + parseFloat(donation.amount.toString()), 0) || 0;
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -161,7 +161,7 @@ const Donations = () => {
                           )}
                         </div>
                         <Badge variant="outline" className="text-green-600 border-green-200">
-                          {parseFloat(donation.amount).toFixed(2)} {donation.currency}
+                          {parseFloat(donation.amount.toString()).toFixed(2)} {donation.currency}
                         </Badge>
                       </div>
                     ))}
