@@ -4,13 +4,17 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Plus, Edit, Trash2, Images } from "lucide-react";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Plus, Edit, Trash2, Images, Eye } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import GalleryDialog from "./GalleryDialog";
+import GalleryPhotosManager from "./GalleryPhotosManager";
 
 const GalleriesManager = () => {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingGallery, setEditingGallery] = useState(null);
+  const [viewingGallery, setViewingGallery] = useState(null);
+  const [photosDialogOpen, setPhotosDialogOpen] = useState(false);
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -32,6 +36,15 @@ const GalleriesManager = () => {
 
   const deleteMutation = useMutation({
     mutationFn: async (id: string) => {
+      // Supprimer d'abord toutes les photos de la galerie
+      const { error: photosError } = await supabase
+        .from('photos')
+        .delete()
+        .eq('gallery_id', id);
+      
+      if (photosError) throw photosError;
+
+      // Puis supprimer la galerie
       const { error } = await supabase
         .from('galleries')
         .delete()
@@ -43,7 +56,7 @@ const GalleriesManager = () => {
       queryClient.invalidateQueries({ queryKey: ['galleries-admin'] });
       toast({
         title: "Galerie supprimée",
-        description: "La galerie a été supprimée avec succès.",
+        description: "La galerie et toutes ses photos ont été supprimées avec succès.",
       });
     },
     onError: (error) => {
@@ -71,6 +84,16 @@ const GalleriesManager = () => {
     setEditingGallery(null);
   };
 
+  const handleViewPhotos = (gallery: any) => {
+    setViewingGallery(gallery);
+    setPhotosDialogOpen(true);
+  };
+
+  const handleClosePhotosDialog = () => {
+    setPhotosDialogOpen(false);
+    setViewingGallery(null);
+  };
+
   if (isLoading) {
     return <div className="flex justify-center p-8">Chargement...</div>;
   }
@@ -88,7 +111,7 @@ const GalleriesManager = () => {
         </Button>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
         {galleries?.map((gallery) => (
           <Card key={gallery.id} className="hover:shadow-lg transition-shadow">
             <CardHeader className="p-4">
@@ -104,6 +127,22 @@ const GalleriesManager = () => {
                 </div>
               </div>
             </CardHeader>
+            
+            {gallery.cover_image && (
+              <div className="px-4">
+                <div className="aspect-video rounded-lg overflow-hidden mb-4">
+                  <img
+                    src={gallery.cover_image}
+                    alt={gallery.title}
+                    className="w-full h-full object-cover"
+                    onError={(e) => {
+                      e.currentTarget.style.display = 'none';
+                    }}
+                  />
+                </div>
+              </div>
+            )}
+            
             <CardContent className="p-4 pt-0">
               <div className="space-y-1 text-xs sm:text-sm text-gray-600 mb-4">
                 {gallery.event_date && (
@@ -116,36 +155,75 @@ const GalleriesManager = () => {
                   {gallery.description}
                 </p>
               )}
-              <div className="flex flex-col sm:flex-row gap-2">
+              <div className="flex flex-col gap-2">
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => handleEdit(gallery)}
-                  className="text-xs sm:text-sm"
+                  onClick={() => handleViewPhotos(gallery)}
+                  className="w-full text-xs sm:text-sm"
                 >
-                  <Edit size={12} className="mr-1" />
-                  Modifier
+                  <Eye size={12} className="mr-2" />
+                  Gérer les photos
                 </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => handleDelete(gallery.id)}
-                  className="text-red-600 hover:text-red-700 text-xs sm:text-sm"
-                >
-                  <Trash2 size={12} className="mr-1" />
-                  Supprimer
-                </Button>
+                <div className="flex gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handleEdit(gallery)}
+                    className="flex-1 text-xs sm:text-sm"
+                  >
+                    <Edit size={12} className="mr-1" />
+                    Modifier
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handleDelete(gallery.id)}
+                    className="text-red-600 hover:text-red-700 text-xs sm:text-sm"
+                  >
+                    <Trash2 size={12} className="mr-1" />
+                    Supprimer
+                  </Button>
+                </div>
               </div>
             </CardContent>
           </Card>
         ))}
       </div>
 
+      {galleries?.length === 0 && (
+        <div className="text-center py-12">
+          <Images size={48} className="mx-auto text-gray-400 mb-4" />
+          <p className="text-gray-500 mb-4">Aucune galerie créée</p>
+          <Button onClick={() => setDialogOpen(true)} className="bg-green-600 hover:bg-green-700">
+            <Plus size={16} className="mr-2" />
+            Créer votre première galerie
+          </Button>
+        </div>
+      )}
+
       <GalleryDialog
         open={dialogOpen}
         onOpenChange={handleCloseDialog}
         gallery={editingGallery}
       />
+
+      <Dialog open={photosDialogOpen} onOpenChange={handleClosePhotosDialog}>
+        <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Gestion des Photos</DialogTitle>
+            <DialogDescription>
+              {viewingGallery?.title}
+            </DialogDescription>
+          </DialogHeader>
+          {viewingGallery && (
+            <GalleryPhotosManager
+              galleryId={viewingGallery.id}
+              galleryTitle={viewingGallery.title}
+            />
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
