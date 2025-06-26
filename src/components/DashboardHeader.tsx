@@ -33,32 +33,36 @@ const DashboardHeader = () => {
 
   return (
     <div className="bg-white shadow-sm border-b">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-        <div className="flex justify-between items-center">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
+        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">Dashboard ESC Chorbane</h1>
-            <p className="text-gray-600 mt-2">Gestion du contenu et des données du club</p>
+            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Dashboard ESC Chorbane</h1>
+            <p className="text-gray-600 text-sm sm:text-base mt-1 sm:mt-2">Gestion du contenu et des données du club</p>
           </div>
-          <div className="flex items-center space-x-4">
-            <span className="text-sm text-gray-600">
-              Connecté en tant que: <span className="font-medium">{user?.email}</span>
+          <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4">
+            <span className="text-xs sm:text-sm text-gray-600 order-3 sm:order-1">
+              Connecté: <span className="font-medium truncate max-w-[150px] sm:max-w-none">{user?.email}</span>
             </span>
-            <Button
-              variant="outline"
-              onClick={goToHome}
-              className="flex items-center gap-2"
-            >
-              <Home size={16} />
-              Accueil
-            </Button>
-            <Button
-              variant="outline"
-              onClick={handleSignOut}
-              className="flex items-center gap-2"
-            >
-              <LogOut size={16} />
-              Déconnexion
-            </Button>
+            <div className="flex gap-2 order-1 sm:order-2">
+              <Button
+                variant="outline"
+                onClick={goToHome}
+                className="flex items-center gap-2 text-xs sm:text-sm px-3 py-2"
+                size="sm"
+              >
+                <Home size={14} />
+                <span className="hidden sm:inline">Accueil</span>
+              </Button>
+              <Button
+                variant="outline"
+                onClick={handleSignOut}
+                className="flex items-center gap-2 text-xs sm:text-sm px-3 py-2"
+                size="sm"
+              >
+                <LogOut size={14} />
+                <span className="hidden sm:inline">Déconnexion</span>
+              </Button>
+            </div>
           </div>
         </div>
       </div>

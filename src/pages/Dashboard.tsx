@@ -16,32 +16,38 @@ const Dashboard = () => {
       <div className="min-h-screen bg-gray-50">
         <DashboardHeader />
 
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <Tabs defaultValue="articles" className="space-y-6">
-            <TabsList className="grid w-full grid-cols-2 md:grid-cols-6 lg:grid-cols-6">
-              <TabsTrigger value="articles" className="flex items-center gap-2">
-                <FileText size={16} />
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-8">
+          <Tabs defaultValue="articles" className="space-y-4 sm:space-y-6">
+            <TabsList className="grid w-full grid-cols-3 md:grid-cols-6 lg:grid-cols-6 h-auto">
+              <TabsTrigger value="articles" className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm p-2 sm:p-3">
+                <FileText size={14} className="sm:size-4" />
                 <span className="hidden sm:inline">Articles</span>
+                <span className="sm:hidden">Art.</span>
               </TabsTrigger>
-              <TabsTrigger value="players" className="flex items-center gap-2">
-                <Users size={16} />
+              <TabsTrigger value="players" className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm p-2 sm:p-3">
+                <Users size={14} className="sm:size-4" />
                 <span className="hidden sm:inline">Joueurs</span>
+                <span className="sm:hidden">Joueurs</span>
               </TabsTrigger>
-              <TabsTrigger value="staff" className="flex items-center gap-2">
-                <UserCheck size={16} />
+              <TabsTrigger value="staff" className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm p-2 sm:p-3">
+                <UserCheck size={14} className="sm:size-4" />
                 <span className="hidden sm:inline">Staff</span>
+                <span className="sm:hidden">Staff</span>
               </TabsTrigger>
-              <TabsTrigger value="matches" className="flex items-center gap-2">
-                <Calendar size={16} />
+              <TabsTrigger value="matches" className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm p-2 sm:p-3">
+                <Calendar size={14} className="sm:size-4" />
                 <span className="hidden sm:inline">Matchs</span>
+                <span className="sm:hidden">Match</span>
               </TabsTrigger>
-              <TabsTrigger value="competitions" className="flex items-center gap-2">
-                <Trophy size={16} />
+              <TabsTrigger value="competitions" className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm p-2 sm:p-3">
+                <Trophy size={14} className="sm:size-4" />
                 <span className="hidden sm:inline">Compétitions</span>
+                <span className="sm:hidden">Comp.</span>
               </TabsTrigger>
-              <TabsTrigger value="galleries" className="flex items-center gap-2">
-                <Camera size={16} />
+              <TabsTrigger value="galleries" className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm p-2 sm:p-3">
+                <Camera size={14} className="sm:size-4" />
                 <span className="hidden sm:inline">Galeries</span>
+                <span className="sm:hidden">Gal.</span>
               </TabsTrigger>
             </TabsList>
 

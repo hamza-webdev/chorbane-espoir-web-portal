@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -86,50 +85,50 @@ const PlayersManager = () => {
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
         <div>
-          <h2 className="text-2xl font-bold text-gray-900">Gestion des Joueurs</h2>
-          <p className="text-gray-600">Gérez l'effectif de l'équipe</p>
+          <h2 className="text-xl sm:text-2xl font-bold text-gray-900">Gestion des Joueurs</h2>
+          <p className="text-sm sm:text-base text-gray-600">Gérez l'effectif de l'équipe</p>
         </div>
-        <Button onClick={() => setDialogOpen(true)} className="bg-green-600 hover:bg-green-700">
+        <Button onClick={() => setDialogOpen(true)} className="bg-green-600 hover:bg-green-700 w-full sm:w-auto">
           <Plus size={16} className="mr-2" />
           Nouveau Joueur
         </Button>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6">
         {players?.map((player) => (
           <Card key={player.id} className="hover:shadow-lg transition-shadow">
-            <CardHeader>
+            <CardHeader className="p-4">
               <div className="flex items-start justify-between">
                 <div className="flex items-center gap-3 flex-1">
-                  <Avatar className="h-12 w-12">
+                  <Avatar className="h-10 w-10 sm:h-12 sm:w-12 flex-shrink-0">
                     <AvatarImage src={player.photo} alt={player.name} />
                     <AvatarFallback>
-                      <Users className="h-6 w-6" />
+                      <Users className="h-4 w-4 sm:h-6 sm:w-6" />
                     </AvatarFallback>
                   </Avatar>
-                  <div className="flex-1">
-                    <CardTitle className="text-lg flex items-center gap-2">
+                  <div className="flex-1 min-w-0">
+                    <CardTitle className="text-sm sm:text-lg flex flex-col sm:flex-row sm:items-center gap-2">
                       {player.jersey_number && (
-                        <Badge className="bg-green-600">#{player.jersey_number}</Badge>
+                        <Badge className="bg-green-600 text-xs w-fit">#{player.jersey_number}</Badge>
                       )}
-                      {player.name}
+                      <span className="truncate">{player.name}</span>
                     </CardTitle>
-                    <CardDescription className="flex items-center gap-2 mt-2">
-                      <Badge variant="outline">
+                    <CardDescription className="flex flex-col sm:flex-row sm:items-center gap-2 mt-2">
+                      <Badge variant="outline" className="text-xs w-fit">
                         {getPositionLabel(player.position)}
                       </Badge>
                       {!player.active && (
-                        <Badge variant="secondary">Inactif</Badge>
+                        <Badge variant="secondary" className="text-xs w-fit">Inactif</Badge>
                       )}
                     </CardDescription>
                   </div>
                 </div>
               </div>
             </CardHeader>
-            <CardContent>
-              <div className="space-y-2 text-sm text-gray-600 mb-4">
+            <CardContent className="p-4 pt-0">
+              <div className="space-y-1 text-xs sm:text-sm text-gray-600 mb-4">
                 {player.age && <p>Âge: {player.age} ans</p>}
                 {player.height && <p>Taille: {player.height} cm</p>}
                 {player.weight && <p>Poids: {player.weight} kg</p>}
@@ -138,26 +137,27 @@ const PlayersManager = () => {
                 )}
               </div>
               {player.bio && (
-                <p className="text-gray-600 text-sm line-clamp-2 mb-4">
+                <p className="text-gray-600 text-xs sm:text-sm line-clamp-2 mb-4">
                   {player.bio}
                 </p>
               )}
-              <div className="flex gap-2">
+              <div className="flex flex-col sm:flex-row gap-2">
                 <Button
                   variant="outline"
                   size="sm"
                   onClick={() => handleEdit(player)}
+                  className="text-xs sm:text-sm"
                 >
-                  <Edit size={14} className="mr-1" />
+                  <Edit size={12} className="mr-1" />
                   Modifier
                 </Button>
                 <Button
                   variant="outline"
                   size="sm"
                   onClick={() => handleDelete(player.id)}
-                  className="text-red-600 hover:text-red-700"
+                  className="text-red-600 hover:text-red-700 text-xs sm:text-sm"
                 >
-                  <Trash2 size={14} className="mr-1" />
+                  <Trash2 size={12} className="mr-1" />
                   Supprimer
                 </Button>
               </div>

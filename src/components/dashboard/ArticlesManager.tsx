@@ -77,22 +77,22 @@ const ArticlesManager = () => {
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
         <div>
-          <h2 className="text-2xl font-bold text-gray-900">Gestion des Articles</h2>
-          <p className="text-gray-600">Créez et gérez les actualités du club</p>
+          <h2 className="text-xl sm:text-2xl font-bold text-gray-900">Gestion des Articles</h2>
+          <p className="text-sm sm:text-base text-gray-600">Créez et gérez les actualités du club</p>
         </div>
-        <Button onClick={() => setDialogOpen(true)} className="bg-green-600 hover:bg-green-700">
+        <Button onClick={() => setDialogOpen(true)} className="bg-green-600 hover:bg-green-700 w-full sm:w-auto">
           <Plus size={16} className="mr-2" />
           Nouvel Article
         </Button>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6">
         {articles?.map((article) => (
           <Card key={article.id} className="hover:shadow-lg transition-shadow overflow-hidden">
             {article.featured_image && (
-              <div className="h-48 bg-gray-200">
+              <div className="h-40 sm:h-48 bg-gray-200">
                 <img 
                   src={article.featured_image} 
                   alt={article.title}
@@ -103,51 +103,52 @@ const ArticlesManager = () => {
                     target.nextElementSibling?.classList.remove('hidden');
                   }}
                 />
-                <div className="h-48 bg-gray-200 flex items-center justify-center hidden">
-                  <FileText className="h-16 w-16 text-gray-400" />
+                <div className="h-40 sm:h-48 bg-gray-200 flex items-center justify-center hidden">
+                  <FileText className="h-12 w-12 sm:h-16 sm:w-16 text-gray-400" />
                 </div>
               </div>
             )}
-            <CardHeader>
+            <CardHeader className="p-4">
               <div className="flex items-start justify-between">
                 <div className="flex-1">
-                  <CardTitle className="text-lg line-clamp-2 mb-2">
+                  <CardTitle className="text-sm sm:text-lg line-clamp-2 mb-2">
                     {article.title}
                   </CardTitle>
-                  <CardDescription className="flex items-center gap-2">
-                    <Badge variant={article.published ? "default" : "secondary"}>
+                  <CardDescription className="flex flex-col sm:flex-row sm:items-center gap-2">
+                    <Badge variant={article.published ? "default" : "secondary"} className="text-xs w-fit">
                       {article.published ? "Publié" : "Brouillon"}
                     </Badge>
-                    <span className="text-sm">
+                    <span className="text-xs sm:text-sm">
                       {format(new Date(article.created_at), 'dd/MM/yyyy', { locale: fr })}
                     </span>
                   </CardDescription>
                 </div>
               </div>
             </CardHeader>
-            <CardContent>
-              <p className="text-gray-600 text-sm line-clamp-3 mb-4">
+            <CardContent className="p-4 pt-0">
+              <p className="text-gray-600 text-xs sm:text-sm line-clamp-3 mb-4">
                 {article.excerpt || article.content.substring(0, 100) + '...'}
               </p>
               {article.author && (
                 <p className="text-xs text-gray-500 mb-4">Par {article.author}</p>
               )}
-              <div className="flex gap-2">
+              <div className="flex flex-col sm:flex-row gap-2">
                 <Button
                   variant="outline"
                   size="sm"
                   onClick={() => handleEdit(article)}
+                  className="text-xs sm:text-sm"
                 >
-                  <Edit size={14} className="mr-1" />
+                  <Edit size={12} className="mr-1" />
                   Modifier
                 </Button>
                 <Button
                   variant="outline"
                   size="sm"
                   onClick={() => handleDelete(article.id)}
-                  className="text-red-600 hover:text-red-700"
+                  className="text-red-600 hover:text-red-700 text-xs sm:text-sm"
                 >
-                  <Trash2 size={14} className="mr-1" />
+                  <Trash2 size={12} className="mr-1" />
                   Supprimer
                 </Button>
               </div>
