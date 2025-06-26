@@ -5,9 +5,10 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Edit, Trash2 } from "lucide-react";
+import { Plus, Edit, Trash2, Users } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import StaffDialog from "./StaffDialog";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 
 const StaffManager = () => {
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -103,18 +104,26 @@ const StaffManager = () => {
           <Card key={member.id} className="hover:shadow-lg transition-shadow">
             <CardHeader>
               <div className="flex items-start justify-between">
-                <div className="flex-1">
-                  <CardTitle className="text-lg">
-                    {member.name}
-                  </CardTitle>
-                  <CardDescription className="flex items-center gap-2 mt-2">
-                    <Badge className="bg-green-600">
-                      {getRoleLabel(member.role)}
-                    </Badge>
-                    {!member.active && (
-                      <Badge variant="secondary">Inactif</Badge>
-                    )}
-                  </CardDescription>
+                <div className="flex items-center gap-3 flex-1">
+                  <Avatar className="h-12 w-12">
+                    <AvatarImage src={member.photo} alt={member.name} />
+                    <AvatarFallback>
+                      <Users className="h-6 w-6" />
+                    </AvatarFallback>
+                  </Avatar>
+                  <div className="flex-1">
+                    <CardTitle className="text-lg">
+                      {member.name}
+                    </CardTitle>
+                    <CardDescription className="flex items-center gap-2 mt-2">
+                      <Badge className="bg-green-600">
+                        {getRoleLabel(member.role)}
+                      </Badge>
+                      {!member.active && (
+                        <Badge variant="secondary">Inactif</Badge>
+                      )}
+                    </CardDescription>
+                  </div>
                 </div>
               </div>
             </CardHeader>

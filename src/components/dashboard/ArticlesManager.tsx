@@ -5,7 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Edit, Trash2, Eye } from "lucide-react";
+import { Plus, Edit, Trash2, FileText } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import ArticleDialog from "./ArticleDialog";
 import { format } from "date-fns";
@@ -90,7 +90,24 @@ const ArticlesManager = () => {
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {articles?.map((article) => (
-          <Card key={article.id} className="hover:shadow-lg transition-shadow">
+          <Card key={article.id} className="hover:shadow-lg transition-shadow overflow-hidden">
+            {article.featured_image && (
+              <div className="h-48 bg-gray-200">
+                <img 
+                  src={article.featured_image} 
+                  alt={article.title}
+                  className="w-full h-full object-cover"
+                  onError={(e) => {
+                    const target = e.target as HTMLImageElement;
+                    target.style.display = 'none';
+                    target.nextElementSibling?.classList.remove('hidden');
+                  }}
+                />
+                <div className="h-48 bg-gray-200 flex items-center justify-center hidden">
+                  <FileText className="h-16 w-16 text-gray-400" />
+                </div>
+              </div>
+            )}
             <CardHeader>
               <div className="flex items-start justify-between">
                 <div className="flex-1">

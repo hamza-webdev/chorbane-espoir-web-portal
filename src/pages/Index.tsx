@@ -220,18 +220,35 @@ const Index = () => {
                           src={player.photo} 
                           alt={player.name}
                           className="w-full h-full object-cover"
+                          onError={(e) => {
+                            const target = e.target as HTMLImageElement;
+                            target.style.display = 'none';
+                            target.nextElementSibling?.classList.remove('hidden');
+                          }}
                         />
                       ) : (
                         <Users className="h-16 w-16 text-gray-400" />
                       )}
+                      {player.photo && (
+                        <Users className="h-16 w-16 text-gray-400 hidden" />
+                      )}
                     </div>
                     <CardContent className="p-4">
-                      <h4 className="font-bold text-lg">{player.name}</h4>
-                      <p className="text-green-600">{player.position}</p>
-                      <div className="mt-2 text-sm text-gray-600">
-                        <p>Âge: {player.age || 'N/A'}</p>
-                        <p>Taille: {player.height ? `${player.height} cm` : 'N/A'}</p>
+                      <div className="flex items-center gap-2 mb-2">
+                        <h4 className="font-bold text-lg">{player.name}</h4>
+                        {player.jersey_number && (
+                          <Badge className="bg-green-600">#{player.jersey_number}</Badge>
+                        )}
                       </div>
+                      <p className="text-green-600 capitalize mb-2">{player.position}</p>
+                      <div className="text-sm text-gray-600 space-y-1">
+                        {player.age && <p>Âge: {player.age} ans</p>}
+                        {player.height && <p>Taille: {player.height} cm</p>}
+                        {player.weight && <p>Poids: {player.weight} kg</p>}
+                      </div>
+                      {player.bio && (
+                        <p className="text-gray-600 text-sm line-clamp-2 mt-2">{player.bio}</p>
+                      )}
                     </CardContent>
                   </Card>
                 ))}
@@ -250,16 +267,31 @@ const Index = () => {
                           src={member.photo} 
                           alt={member.name}
                           className="w-full h-full object-cover"
+                          onError={(e) => {
+                            const target = e.target as HTMLImageElement;
+                            target.style.display = 'none';
+                            target.nextElementSibling?.classList.remove('hidden');
+                          }}
                         />
                       ) : (
                         <Users className="h-16 w-16 text-gray-400" />
                       )}
+                      {member.photo && (
+                        <Users className="h-16 w-16 text-gray-400 hidden" />
+                      )}
                     </div>
                     <CardContent className="p-4">
-                      <h4 className="font-bold text-lg">{member.name}</h4>
-                      <p className="text-green-600 mb-2">{member.role}</p>
+                      <h4 className="font-bold text-lg mb-2">{member.name}</h4>
+                      <p className="text-green-600 capitalize mb-2">{member.role.replace('_', ' ')}</p>
+                      <div className="text-sm text-gray-600 space-y-1 mb-2">
+                        {member.email && <p>Email: {member.email}</p>}
+                        {member.phone && <p>Tél: {member.phone}</p>}
+                        {member.joined_date && (
+                          <p>Arrivé le: {format(new Date(member.joined_date), 'dd/MM/yyyy', { locale: fr })}</p>
+                        )}
+                      </div>
                       {member.bio && (
-                        <p className="text-sm text-gray-600 line-clamp-3">{member.bio}</p>
+                        <p className="text-gray-600 text-sm line-clamp-3">{member.bio}</p>
                       )}
                     </CardContent>
                   </Card>
@@ -351,6 +383,10 @@ const Index = () => {
                         src={article.featured_image} 
                         alt={article.title}
                         className="w-full h-full object-cover"
+                        onError={(e) => {
+                          const target = e.target as HTMLImageElement;
+                          target.style.display = 'none';
+                        }}
                       />
                     </div>
                   )}
