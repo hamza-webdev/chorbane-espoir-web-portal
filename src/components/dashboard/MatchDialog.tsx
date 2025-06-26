@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -159,12 +158,14 @@ const MatchDialog = ({ open, onOpenChange, match }: MatchDialogProps) => {
 
           <div>
             <Label htmlFor="competition_id">Compétition</Label>
-            <Select value={formData.competition_id} onValueChange={(value) => setFormData({ ...formData, competition_id: value })}>
+            <Select 
+              value={formData.competition_id} 
+              onValueChange={(value) => setFormData({ ...formData, competition_id: value })}
+            >
               <SelectTrigger>
                 <SelectValue placeholder="Sélectionner une compétition" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">Aucune compétition</SelectItem>
                 {competitions?.map((competition) => (
                   <SelectItem key={competition.id} value={competition.id}>
                     {competition.name}
