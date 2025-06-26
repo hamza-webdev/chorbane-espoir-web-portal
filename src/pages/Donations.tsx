@@ -17,31 +17,46 @@ const Donations = () => {
   const dateLocale = i18n.language === 'ar' ? ar : fr;
 
   const { data: donations, isLoading, error, refetch } = useQuery({
-    queryKey: ['donations'],
+    queryKey: ['public-donations'],
     queryFn: async () => {
-      console.log('Fetching donations...');
+      console.log('Fetching donations from database...');
+      
       const { data, error } = await supabase
         .from('donations')
-        .select('*')
+        .select(`
+          id,
+          donor_name,
+          donor_email,
+          donor_phone,
+          amount,
+          currency,
+          payment_method,
+          is_anonymous,
+          message,
+          status,
+          created_at,
+          updated_at
+        `)
         .eq('status', 'completed')
         .order('created_at', { ascending: false });
       
       if (error) {
         console.error('Error fetching donations:', error);
-        throw error;
+        throw new Error(`Erreur de récupération des donations: ${error.message}`);
       }
       
-      console.log('Donations fetched:', data);
+      console.log('Donations fetched successfully:', data?.length || 0, 'donations');
       return data || [];
     },
     refetchOnWindowFocus: false,
+    retry: 3,
+    retryDelay: attemptIndex => Math.min(1000 * 2 ** attemptIndex, 30000),
   });
 
-  // Calculate total amount with proper error handling
+  // Calculate total amount with better error handling
   const totalAmount = donations?.reduce((sum, donation) => {
-    console.log('Processing donation amount:', donation.amount, 'type:', typeof donation.amount);
+    console.log('Processing donation:', donation.id, 'amount:', donation.amount);
     
-    // Handle different amount formats
     let amount = 0;
     if (donation.amount !== null && donation.amount !== undefined) {
       if (typeof donation.amount === 'string') {
@@ -52,12 +67,11 @@ const Donations = () => {
       }
     }
     
-    console.log('Converted amount:', amount);
     return sum + amount;
   }, 0) || 0;
 
+  console.log('Total donations:', donations?.length || 0);
   console.log('Total amount calculated:', totalAmount);
-  console.log('Number of donations:', donations?.length || 0);
 
   const fundUsageItems = [
     {
@@ -115,25 +129,25 @@ const Donations = () => {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Heart className="h-5 w-5 text-red-500" />
-                {t("donations.impact_title")}
+                {t("donations.impact_title", "Impact de vos donations")}
               </CardTitle>
             </CardHeader>
             <CardContent>
               <p className="text-gray-600 mb-4">
-                {t("donations.impact_description")}
+                {t("donations.impact_description", "Grâce à votre générosité, nous pouvons continuer à développer notre club et offrir les meilleures conditions à nos joueurs.")}
               </p>
-              <div className="bg-green-50 p-4 rounded-lg border border-green-200">
-                <div className="text-3xl font-bold text-green-600 mb-1">
+              <div className="bg-green-50 p-6 rounded-lg border border-green-200">
+                <div className="text-4xl font-bold text-green-600 mb-2">
                   {totalAmount.toLocaleString('fr-FR', { 
                     minimumFractionDigits: 2, 
                     maximumFractionDigits: 2 
                   })} DT
                 </div>
-                <p className="text-sm text-green-700 font-medium">
+                <p className="text-lg text-green-700 font-medium mb-1">
                   {t("donations.total_raised", "Total collecté")}
                 </p>
-                <p className="text-xs text-green-600 mt-1">
-                  {donations?.length || 0} donation{(donations?.length || 0) > 1 ? 's' : ''} reçue{(donations?.length || 0) > 1 ? 's' : ''}
+                <p className="text-sm text-green-600">
+                  {donations?.length || 0} donation{(donations?.length || 0) > 1 ? 's' : ''} confirmée{(donations?.length || 0) > 1 ? 's' : ''}
                 </p>
               </div>
             </CardContent>
@@ -142,18 +156,18 @@ const Donations = () => {
           {/* Fund Usage */}
           <Card>
             <CardHeader>
-              <CardTitle>{t("donations.fund_usage")}</CardTitle>
+              <CardTitle>{t("donations.fund_usage", "Utilisation des fonds")}</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {fundUsageItems.map((item, index) => {
                   const Icon = item.icon;
                   return (
-                    <div key={index} className="flex items-start gap-3 p-3 bg-gray-50 rounded-lg">
-                      <Icon className={`h-5 w-5 mt-1 ${item.color}`} />
+                    <div key={index} className="flex items-start gap-3 p-4 bg-gray-50 rounded-lg">
+                      <Icon className={`h-6 w-6 mt-0.5 ${item.color}`} />
                       <div>
                         <h4 className="font-medium text-gray-900">{item.title}</h4>
-                        <p className="text-sm text-gray-600">{item.description}</p>
+                        <p className="text-sm text-gray-600 mt-1">{item.description}</p>
                       </div>
                     </div>
                   );
@@ -198,27 +212,27 @@ const Donations = () => {
               {isLoading ? (
                 <div className="text-center py-8">
                   <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600 mx-auto mb-4"></div>
-                  <p className="text-gray-600">{t("common.loading")}</p>
+                  <p className="text-gray-600">{t("common.loading", "Chargement...")}</p>
                 </div>
               ) : error ? (
                 <div className="text-center py-8">
-                  <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-                    <p className="text-red-600 font-medium">Erreur lors du chargement des donations</p>
-                    <p className="text-sm text-red-500 mt-1">{error.message}</p>
+                  <div className="bg-red-50 border border-red-200 rounded-lg p-6">
+                    <p className="text-red-600 font-medium mb-2">Erreur lors du chargement des donations</p>
+                    <p className="text-sm text-red-500 mb-4">{error.message}</p>
                     <Button 
                       variant="outline" 
                       size="sm" 
                       onClick={() => refetch()}
-                      className="mt-3"
+                      className="text-red-600 hover:text-red-700"
                     >
                       Réessayer
                     </Button>
                   </div>
                 </div>
               ) : donations && donations.length > 0 ? (
-                <div className="space-y-3 max-h-96 overflow-y-auto">
+                <div className="space-y-4 max-h-96 overflow-y-auto">
                   {donations.map((donation) => {
-                    // Handle amount conversion with better error handling
+                    // Handle amount conversion safely
                     let amount = 0;
                     if (donation.amount !== null && donation.amount !== undefined) {
                       if (typeof donation.amount === 'string') {
@@ -230,39 +244,64 @@ const Donations = () => {
                     }
                     
                     return (
-                      <div key={donation.id} className="flex items-center justify-between p-4 bg-white border border-gray-200 rounded-lg shadow-sm hover:shadow-md transition-shadow">
-                        <div className="flex-1">
-                          <div className="flex items-center gap-2 mb-1">
-                            <p className="font-medium text-gray-900">
-                              {donation.is_anonymous ? t("donations.anonymous_donor", "Donateur anonyme") : (donation.donor_name || "Donateur")}
+                      <div key={donation.id} className="flex items-start justify-between p-4 bg-white border border-gray-200 rounded-lg shadow-sm hover:shadow-md transition-shadow">
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 mb-2">
+                            <p className="font-medium text-gray-900 truncate">
+                              {donation.is_anonymous ? 
+                                t("donations.anonymous_donor", "Donateur anonyme") : 
+                                (donation.donor_name || "Donateur")
+                              }
                             </p>
                             {donation.payment_method && (
-                              <Badge variant="outline" className="text-xs">
-                                {donation.payment_method.toUpperCase()}
+                              <Badge variant="outline" className="text-xs shrink-0">
+                                {donation.payment_method.replace('_', ' ').toUpperCase()}
                               </Badge>
                             )}
                           </div>
-                          <p className="text-sm text-gray-500">
-                            {format(new Date(donation.created_at), 'dd MMM yyyy à HH:mm', { locale: dateLocale })}
-                          </p>
-                          {donation.message && (
-                            <p className="text-sm text-gray-700 italic mt-2 bg-gray-50 p-2 rounded">
-                              "{donation.message}"
+                          
+                          <div className="space-y-1 text-sm text-gray-600">
+                            <p className="flex items-center gap-1">
+                              <span>📅</span>
+                              {format(new Date(donation.created_at), 'dd MMMM yyyy à HH:mm', { locale: dateLocale })}
                             </p>
+                            
+                            {!donation.is_anonymous && donation.donor_email && (
+                              <p className="flex items-center gap-1">
+                                <span>📧</span>
+                                <span className="truncate">{donation.donor_email}</span>
+                              </p>
+                            )}
+                            
+                            {!donation.is_anonymous && donation.donor_phone && (
+                              <p className="flex items-center gap-1">
+                                <span>📞</span>
+                                {donation.donor_phone}
+                              </p>
+                            )}
+                          </div>
+                          
+                          {donation.message && (
+                            <div className="mt-3 p-3 bg-gray-50 rounded-lg border-l-4 border-blue-200">
+                              <p className="text-sm text-gray-700 italic">
+                                💬 "{donation.message}"
+                              </p>
+                            </div>
                           )}
                         </div>
-                        <div className="text-right ml-4">
-                          <div className="text-lg font-bold text-green-600">
+                        
+                        <div className="text-right ml-4 shrink-0">
+                          <div className="text-xl font-bold text-green-600">
                             {amount.toLocaleString('fr-FR', { 
                               minimumFractionDigits: 2, 
                               maximumFractionDigits: 2 
                             })} {donation.currency || 'DT'}
                           </div>
                           <Badge 
-                            variant={donation.status === 'completed' ? 'default' : 'secondary'} 
-                            className="text-xs mt-1"
+                            variant="default"
+                            className="text-xs mt-1 bg-green-100 text-green-800"
                           >
-                            {donation.status === 'completed' ? 'Confirmé' : donation.status}
+                            ✓ Confirmé
                           </Badge>
                         </div>
                       </div>
