@@ -1,19 +1,20 @@
-
-import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { CalendarDays, Users, Trophy, Camera, Mail, Phone, MapPin } from "lucide-react";
-import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
+import { Calendar, MapPin, Users, Trophy, Camera, Mail, Phone, Clock, Plus } from "lucide-react";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
+import { useAuth } from "@/hooks/useAuth";
+import { useState } from "react";
+import MatchDialog from "@/components/dashboard/MatchDialog";
 
 const Index = () => {
-  const [activeSection, setActiveSection] = useState("accueil");
+  const { isAuthenticated } = useAuth();
+  const [matchDialogOpen, setMatchDialogOpen] = useState(false);
 
-  // Fetch articles
-  const { data: articles, isLoading: articlesLoading } = useQuery({
+  const { data: articles } = useQuery({
     queryKey: ['articles'],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -21,50 +22,28 @@ const Index = () => {
         .select('*')
         .eq('published', true)
         .order('created_at', { ascending: false })
-        .limit(6);
+        .limit(3);
       
       if (error) throw error;
       return data;
     }
   });
 
-  // Fetch next match
-  const { data: nextMatch, isLoading: matchLoading } = useQuery({
-    queryKey: ['nextMatch'],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('matches')
-        .select(`
-          *,
-          competitions (name, type)
-        `)
-        .eq('status', 'a_venir')
-        .gte('match_date', new Date().toISOString())
-        .order('match_date', { ascending: true })
-        .limit(1)
-        .single();
-      
-      if (error && error.code !== 'PGRST116') throw error;
-      return data;
-    }
-  });
-
-  // Fetch players
-  const { data: players, isLoading: playersLoading } = useQuery({
+  const { data: players } = useQuery({
     queryKey: ['players'],
     queryFn: async () => {
       const { data, error } = await supabase
         .from('players')
         .select('*')
-        .order('jersey_number', { ascending: true });
+        .eq('active', true)
+        .order('name');
       
       if (error) throw error;
       return data;
     }
   });
 
-  // Fetch all matches
-  const { data: matches, isLoading: matchesLoading } = useQuery({
+  const { data: matches } = useQuery({
     queryKey: ['matches'],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -73,25 +52,37 @@ const Index = () => {
           *,
           competitions (name, type)
         `)
-        .order('match_date', { ascending: false })
-        .limit(10);
+        .order('match_date', { ascending: true });
       
       if (error) throw error;
       return data;
     }
   });
 
-  // Fetch galleries
-  const { data: galleries, isLoading: galleriesLoading } = useQuery({
+  const { data: staff } = useQuery({
+    queryKey: ['staff'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('staff')
+        .select('*')
+        .eq('active', true)
+        .order('name');
+      
+      if (error) throw error;
+      return data;
+    }
+  });
+
+  const { data: galleries } = useQuery({
     queryKey: ['galleries'],
     queryFn: async () => {
       const { data, error } = await supabase
         .from('galleries')
         .select(`
           *,
-          photos (*)
+          photos (image_url, caption)
         `)
-        .order('created_at', { ascending: false })
+        .order('event_date', { ascending: false })
         .limit(6);
       
       if (error) throw error;
@@ -99,227 +90,143 @@ const Index = () => {
     }
   });
 
-  const navigation = [
-    { name: "Accueil", href: "#accueil", id: "accueil" },
-    { name: "Équipe", href: "#equipe", id: "equipe" },
-    { name: "Matchs", href: "#matchs", id: "matchs" },
-    { name: "Actualités", href: "#actualites", id: "actualites" },
-    { name: "Galeries", href: "#galeries", id: "galeries" },
-    { name: "Contact", href: "#contact", id: "contact" }
-  ];
-
-  const scrollToSection = (sectionId: string) => {
-    setActiveSection(sectionId);
-    const element = document.getElementById(sectionId);
-    if (element) {
-      element.scrollIntoView({ behavior: 'smooth' });
-    }
+  const getMatchStatus = (match: any) => {
+    const matchDate = new Date(match.match_date);
+    const now = new Date();
+    
+    if (match.status === 'termine') return { label: 'Terminé', variant: 'outline' as const };
+    if (match.status === 'reporte') return { label: 'Reporté', variant: 'destructive' as const };
+    if (match.status === 'en_cours') return { label: 'En cours', variant: 'secondary' as const };
+    if (matchDate > now) return { label: 'À venir', variant: 'default' as const };
+    
+    return { label: 'À venir', variant: 'default' as const };
   };
 
+  const nextMatch = matches?.find(match => 
+    new Date(match.match_date) > new Date() && match.status === 'a_venir'
+  );
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-green-50 to-white">
+    <div className="min-h-screen">
       {/* Header fixe */}
-      <header className="fixed top-0 w-full bg-white/95 backdrop-blur-sm shadow-lg border-b-4 border-green-600 z-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center py-4">
-            <div className="flex items-center space-x-4">
-              <div className="w-12 h-12 bg-green-600 rounded-full flex items-center justify-center">
-                <span className="text-white font-bold text-xl">ESC</span>
-              </div>
-              <div>
-                <h1 className="text-2xl font-bold text-green-800">Espoir Sportif</h1>
-                <p className="text-sm text-green-600">de Chorbane</p>
+      <header className="fixed top-0 left-0 right-0 bg-white shadow-md z-50">
+        <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center h-16">
+            <div className="flex items-center">
+              <div className="flex-shrink-0">
+                <span className="text-2xl font-bold text-green-600">ESC</span>
               </div>
             </div>
-
-            {/* Navigation */}
-            <nav className="hidden md:flex items-center space-x-8">
-              {navigation.map((item) => (
-                <button
-                  key={item.name}
-                  onClick={() => scrollToSection(item.id)}
-                  className={`font-medium transition-colors duration-200 ${
-                    activeSection === item.id 
-                      ? 'text-green-600 border-b-2 border-green-600' 
-                      : 'text-gray-700 hover:text-green-600'
-                  }`}
-                >
-                  {item.name}
-                </button>
-              ))}
-              <Button 
-                onClick={() => window.open('/auth', '_blank')}
-                variant="outline" 
-                className="ml-4"
-              >
-                Dashboard
-              </Button>
-            </nav>
+            <div className="hidden md:block">
+              <div className="ml-10 flex items-baseline space-x-4">
+                <a href="#accueil" className="text-gray-700 hover:text-green-600 px-3 py-2 text-sm font-medium">Accueil</a>
+                <a href="#equipe" className="text-gray-700 hover:text-green-600 px-3 py-2 text-sm font-medium">Équipe</a>
+                <a href="#matchs" className="text-gray-700 hover:text-green-600 px-3 py-2 text-sm font-medium">Matchs</a>
+                <a href="#actualites" className="text-gray-700 hover:text-green-600 px-3 py-2 text-sm font-medium">Actualités</a>
+                <a href="#galeries" className="text-gray-700 hover:text-green-600 px-3 py-2 text-sm font-medium">Galeries</a>
+                <a href="#contact" className="text-gray-700 hover:text-green-600 px-3 py-2 text-sm font-medium">Contact</a>
+                {isAuthenticated && (
+                  <a href="/dashboard" className="bg-green-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-green-700">Dashboard</a>
+                )}
+              </div>
+            </div>
           </div>
-        </div>
+        </nav>
       </header>
 
-      <div className="pt-20">
+      {/* Contenu principal avec padding-top pour compenser le header fixe */}
+      <main className="pt-16">
         {/* Section Accueil */}
-        <section id="accueil" className="relative bg-gradient-to-r from-green-800 to-green-600 text-white py-20">
-          <div className="absolute inset-0 bg-black opacity-20"></div>
-          <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-            <h2 className="text-5xl md:text-6xl font-bold mb-6">
-              Espoir Sportif de Chorbane
-            </h2>
-            <p className="text-xl md:text-2xl mb-8 text-green-100">
-              Fondé en 1975 • Couleurs Vert et Blanc
-            </p>
-            <p className="text-lg mb-10 max-w-3xl mx-auto">
-              Bienvenue sur le site officiel de l'Espoir Sportif de Chorbane. 
-              Suivez notre équipe, découvrez nos joueurs et restez informés de toute l'actualité du club.
-            </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Button 
-                size="lg" 
-                className="bg-white text-green-800 hover:bg-green-50"
-                onClick={() => scrollToSection('equipe')}
-              >
-                Découvrir l'équipe
-              </Button>
-              <Button 
-                size="lg" 
-                variant="outline" 
-                className="border-white text-white hover:bg-white hover:text-green-800"
-                onClick={() => scrollToSection('matchs')}
-              >
-                Prochains matchs
-              </Button>
+        <section id="accueil" className="bg-gradient-to-r from-green-600 to-green-800 text-white">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24">
+            <div className="text-center">
+              <h1 className="text-4xl md:text-6xl font-bold mb-6">
+                Espoir Sportif de Chebba
+              </h1>
+              <p className="text-xl md:text-2xl mb-8 text-green-100">
+                Club de football tunisien fondé avec passion
+              </p>
+              <div className="flex justify-center space-x-4">
+                <a href="#equipe" className="bg-white text-green-600 px-6 py-3 rounded-lg font-semibold hover:bg-gray-100 transition">
+                  Découvrir l'équipe
+                </a>
+                <a href="#matchs" className="border-2 border-white text-white px-6 py-3 rounded-lg font-semibold hover:bg-white hover:text-green-600 transition">
+                  Voir les matchs
+                </a>
+              </div>
             </div>
           </div>
         </section>
 
-        {/* Section Prochain Match */}
+        {/* Prochain match en vedette */}
         {nextMatch && (
-          <section className="py-16 bg-green-50">
-            <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-              <h3 className="text-3xl font-bold text-center mb-12 text-gray-900">Prochain Match</h3>
-              <Card className="bg-white shadow-xl border-2 border-green-200">
-                <CardHeader className="bg-gradient-to-r from-green-600 to-green-700 text-white rounded-t-lg">
-                  <div className="text-center">
-                    <Badge className="bg-white text-green-800 mb-4">
-                      {nextMatch.competitions?.name || 'Match'}
-                    </Badge>
-                    <CardTitle className="text-2xl md:text-3xl">
-                      ESC Chorbane vs {nextMatch.opponent_team}
-                    </CardTitle>
-                  </div>
-                </CardHeader>
-                <CardContent className="p-8">
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-center">
-                    <div className="flex flex-col items-center">
-                      <CalendarDays className="w-8 h-8 text-green-600 mb-2" />
-                      <p className="font-semibold text-gray-900">
-                        {format(new Date(nextMatch.match_date), 'EEEE dd MMMM yyyy', { locale: fr })}
-                      </p>
+          <section className="bg-gray-50 py-16">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+              <div className="text-center mb-12">
+                <h2 className="text-3xl font-bold text-gray-900 mb-4">Prochain Match</h2>
+              </div>
+              <div className="max-w-2xl mx-auto">
+                <Card className="bg-white shadow-lg">
+                  <CardContent className="p-8">
+                    <div className="text-center">
+                      <div className="text-2xl font-bold mb-4">
+                        ESC vs {nextMatch.opponent_team}
+                      </div>
+                      <div className="flex items-center justify-center space-x-6 text-gray-600 mb-4">
+                        <div className="flex items-center">
+                          <Calendar className="h-5 w-5 mr-2" />
+                          {format(new Date(nextMatch.match_date), 'dd/MM/yyyy à HH:mm', { locale: fr })}
+                        </div>
+                        {nextMatch.venue && (
+                          <div className="flex items-center">
+                            <MapPin className="h-5 w-5 mr-2" />
+                            {nextMatch.venue}
+                          </div>
+                        )}
+                      </div>
+                      {nextMatch.competitions && (
+                        <Badge variant="outline" className="mb-4">
+                          {nextMatch.competitions.name}
+                        </Badge>
+                      )}
+                      <div className="text-sm text-gray-600">
+                        {nextMatch.is_home ? 'Match à domicile' : 'Match à l\'extérieur'}
+                      </div>
                     </div>
-                    <div className="flex flex-col items-center">
-                      <Trophy className="w-8 h-8 text-green-600 mb-2" />
-                      <p className="font-semibold text-gray-900">
-                        {format(new Date(nextMatch.match_date), 'HH:mm')}
-                      </p>
-                    </div>
-                    <div className="flex flex-col items-center">
-                      <MapPin className="w-8 h-8 text-green-600 mb-2" />
-                      <p className="font-semibold text-gray-900">
-                        {nextMatch.venue || (nextMatch.is_home ? 'Domicile' : 'Extérieur')}
-                      </p>
-                      <Badge variant={nextMatch.is_home ? "default" : "secondary"} className="mt-1">
-                        {nextMatch.is_home ? 'Domicile' : 'Extérieur'}
-                      </Badge>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
+                  </CardContent>
+                </Card>
+              </div>
             </div>
           </section>
         )}
 
-        {/* Section Actualités */}
-        <section id="actualites" className="py-16 bg-white">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <h3 className="text-3xl font-bold text-center mb-12 text-gray-900">Dernières Actualités</h3>
-            {articlesLoading ? (
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                {[1, 2, 3].map((i) => (
-                  <Card key={i} className="animate-pulse">
-                    <CardHeader>
-                      <div className="h-4 bg-gray-200 rounded w-3/4"></div>
-                      <div className="h-3 bg-gray-200 rounded w-1/2"></div>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="h-20 bg-gray-200 rounded"></div>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
-            ) : (
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                {articles?.map((article) => (
-                  <Card key={article.id} className="hover:shadow-lg transition-shadow duration-300 border-l-4 border-green-600">
-                    <CardHeader>
-                      <div className="flex items-center justify-between mb-2">
-                        <Badge variant="secondary" className="bg-green-100 text-green-800">
-                          Actualité
-                        </Badge>
-                        <div className="flex items-center text-sm text-gray-500">
-                          <CalendarDays size={16} className="mr-1" />
-                          {format(new Date(article.created_at), 'dd MMM yyyy', { locale: fr })}
-                        </div>
-                      </div>
-                      <CardTitle className="text-xl text-gray-900 line-clamp-2">
-                        {article.title}
-                      </CardTitle>
-                      {article.author && (
-                        <CardDescription className="text-green-600">
-                          Par {article.author}
-                        </CardDescription>
-                      )}
-                    </CardHeader>
-                    <CardContent>
-                      <p className="text-gray-600 line-clamp-3">
-                        {article.excerpt || article.content.substring(0, 150) + '...'}
-                      </p>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
-            )}
-          </div>
-        </section>
-
         {/* Section Équipe */}
-        <section id="equipe" className="py-16 bg-green-50">
+        <section id="equipe" className="py-16 bg-white">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <h3 className="text-3xl font-bold text-center mb-12 text-gray-900">Notre Équipe</h3>
-            {playersLoading ? (
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-                {[1, 2, 3, 4].map((i) => (
-                  <Card key={i} className="animate-pulse">
-                    <CardContent className="p-4">
-                      <div className="h-32 bg-gray-200 rounded mb-4"></div>
-                      <div className="h-4 bg-gray-200 rounded mb-2"></div>
-                      <div className="h-3 bg-gray-200 rounded"></div>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
-            ) : (
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+            <div className="text-center mb-12">
+              <h2 className="text-3xl font-bold text-gray-900 mb-4">Notre Équipe</h2>
+              <p className="text-lg text-gray-600">Découvrez nos joueurs et notre staff technique</p>
+            </div>
+
+            {/* Joueurs */}
+            <div className="mb-16">
+              <h3 className="text-2xl font-bold text-gray-900 mb-8 text-center">Joueurs</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 {players?.map((player) => (
-                  <Card key={player.id} className="hover:shadow-lg transition-shadow duration-300">
-                    <CardContent className="p-4 text-center">
-                      <div className="w-20 h-20 bg-green-600 rounded-full flex items-center justify-center mx-auto mb-4">
-                        <span className="text-white font-bold text-2xl">
-                          {player.jersey_number || '?'}
-                        </span>
-                      </div>
-                      <h4 className="font-bold text-lg text-gray-900">{player.name}</h4>
+                  <Card key={player.id} className="overflow-hidden hover:shadow-lg transition-shadow">
+                    <div className="h-48 bg-gray-200 flex items-center justify-center">
+                      {player.photo ? (
+                        <img 
+                          src={player.photo} 
+                          alt={player.name}
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <Users className="h-16 w-16 text-gray-400" />
+                      )}
+                    </div>
+                    <CardContent className="p-4">
+                      <h4 className="font-bold text-lg">{player.name}</h4>
                       <p className="text-green-600">{player.position}</p>
                       <div className="mt-2 text-sm text-gray-600">
                         <p>Âge: {player.age || 'N/A'}</p>
@@ -329,66 +236,82 @@ const Index = () => {
                   </Card>
                 ))}
               </div>
-            )}
-          </div>
-        </section>
+            </div>
 
-        {/* Section Matchs */}
-        <section id="matchs" className="py-16 bg-white">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <h3 className="text-3xl font-bold text-center mb-12 text-gray-900">Calendrier des Matchs</h3>
-            {matchesLoading ? (
-              <div className="space-y-4">
-                {[1, 2, 3].map((i) => (
-                  <Card key={i} className="animate-pulse">
-                    <CardContent className="p-6">
-                      <div className="h-6 bg-gray-200 rounded mb-4"></div>
-                      <div className="grid grid-cols-3 gap-4">
-                        <div className="h-4 bg-gray-200 rounded"></div>
-                        <div className="h-4 bg-gray-200 rounded"></div>
-                        <div className="h-4 bg-gray-200 rounded"></div>
-                      </div>
+            {/* Staff */}
+            <div>
+              <h3 className="text-2xl font-bold text-gray-900 mb-8 text-center">Staff Technique</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {staff?.map((member) => (
+                  <Card key={member.id} className="overflow-hidden hover:shadow-lg transition-shadow">
+                    <div className="h-48 bg-gray-200 flex items-center justify-center">
+                      {member.photo ? (
+                        <img 
+                          src={member.photo} 
+                          alt={member.name}
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <Users className="h-16 w-16 text-gray-400" />
+                      )}
+                    </div>
+                    <CardContent className="p-4">
+                      <h4 className="font-bold text-lg">{member.name}</h4>
+                      <p className="text-green-600 mb-2">{member.role}</p>
+                      {member.bio && (
+                        <p className="text-sm text-gray-600 line-clamp-3">{member.bio}</p>
+                      )}
                     </CardContent>
                   </Card>
                 ))}
               </div>
-            ) : (
-              <div className="space-y-4">
-                {matches?.map((match) => (
-                  <Card key={match.id} className="hover:shadow-lg transition-shadow duration-300">
-                    <CardContent className="p-6">
-                      <div className="flex flex-col md:flex-row md:items-center md:justify-between">
-                        <div className="flex-1 mb-4 md:mb-0">
-                          <h4 className="text-xl font-bold text-gray-900 mb-2">
-                            ESC Chorbane vs {match.opponent_team}
-                          </h4>
-                          <div className="flex items-center space-x-4 text-sm text-gray-600">
-                            <span className="flex items-center">
-                              <CalendarDays size={16} className="mr-1" />
-                              {format(new Date(match.match_date), 'dd/MM/yyyy', { locale: fr })}
-                            </span>
-                            <span className="flex items-center">
-                              <Trophy size={16} className="mr-1" />
-                              {format(new Date(match.match_date), 'HH:mm')}
-                            </span>
-                            <span className="flex items-center">
-                              <MapPin size={16} className="mr-1" />
-                              {match.venue || (match.is_home ? 'Domicile' : 'Extérieur')}
-                            </span>
-                          </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Section Matchs */}
+        <section id="matchs" className="py-16 bg-gray-50">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="flex justify-between items-center mb-12">
+              <div className="text-center flex-1">
+                <h2 className="text-3xl font-bold text-gray-900 mb-4">Calendrier des Matchs</h2>
+                <p className="text-lg text-gray-600">Suivez tous nos matchs et résultats</p>
+              </div>
+              {isAuthenticated && (
+                <Button onClick={() => setMatchDialogOpen(true)} className="bg-green-600 hover:bg-green-700">
+                  <Plus size={16} className="mr-2" />
+                  Nouveau Match
+                </Button>
+              )}
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {matches?.map((match) => {
+                const statusInfo = getMatchStatus(match);
+                return (
+                  <Card key={match.id} className="overflow-hidden hover:shadow-lg transition-shadow">
+                    <CardHeader>
+                      <CardTitle className="text-lg">
+                        ESC vs {match.opponent_team}
+                      </CardTitle>
+                      <CardDescription>
+                        <div className="flex items-center space-x-2 mb-2">
+                          <Calendar className="h-4 w-4" />
+                          <span>{format(new Date(match.match_date), 'dd/MM/yyyy à HH:mm', { locale: fr })}</span>
                         </div>
-                        <div className="flex items-center space-x-4">
-                          <Badge variant={match.is_home ? "default" : "secondary"}>
-                            {match.is_home ? 'Domicile' : 'Extérieur'}
-                          </Badge>
-                          <Badge className={
-                            match.status === 'termine' ? 'bg-gray-500' :
-                            match.status === 'en_cours' ? 'bg-yellow-500' :
-                            'bg-green-500'
-                          }>
-                            {match.status === 'termine' ? 'Terminé' :
-                             match.status === 'en_cours' ? 'En cours' :
-                             'À venir'}
+                        {match.venue && (
+                          <div className="flex items-center space-x-2">
+                            <MapPin className="h-4 w-4" />
+                            <span>{match.venue}</span>
+                          </div>
+                        )}
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="flex justify-between items-center">
+                        <div className="space-y-2">
+                          <Badge variant={statusInfo.variant}>
+                            {statusInfo.label}
                           </Badge>
                           {match.status === 'termine' && (
                             <div className="text-lg font-bold">
@@ -396,186 +319,217 @@ const Index = () => {
                             </div>
                           )}
                         </div>
+                        <div className="text-right text-sm text-gray-600">
+                          <p>{match.is_home ? 'Domicile' : 'Extérieur'}</p>
+                          {match.competitions && (
+                            <p className="text-green-600">{match.competitions.name}</p>
+                          )}
+                        </div>
                       </div>
                     </CardContent>
                   </Card>
-                ))}
-              </div>
-            )}
+                );
+              })}
+            </div>
+          </div>
+        </section>
+
+        {/* Section Actualités */}
+        <section id="actualites" className="py-16 bg-white">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="text-center mb-12">
+              <h2 className="text-3xl font-bold text-gray-900 mb-4">Dernières Actualités</h2>
+              <p className="text-lg text-gray-600">Restez informé de toute l'actualité du club</p>
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {articles?.map((article) => (
+                <Card key={article.id} className="overflow-hidden hover:shadow-lg transition-shadow">
+                  {article.featured_image && (
+                    <div className="h-48 bg-gray-200">
+                      <img 
+                        src={article.featured_image} 
+                        alt={article.title}
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                  )}
+                  <CardContent className="p-6">
+                    <h3 className="text-xl font-bold mb-2">{article.title}</h3>
+                    {article.excerpt && (
+                      <p className="text-gray-600 mb-4 line-clamp-3">{article.excerpt}</p>
+                    )}
+                    <div className="flex justify-between items-center text-sm text-gray-500">
+                      <span>{format(new Date(article.created_at), 'dd MMM yyyy', { locale: fr })}</span>
+                      {article.author && <span>Par {article.author}</span>}
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
           </div>
         </section>
 
         {/* Section Galeries */}
-        <section id="galeries" className="py-16 bg-green-50">
+        <section id="galeries" className="py-16 bg-gray-50">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <h3 className="text-3xl font-bold text-center mb-12 text-gray-900">Galeries Photos</h3>
-            {galleriesLoading ? (
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                {[1, 2, 3].map((i) => (
-                  <Card key={i} className="animate-pulse">
-                    <div className="h-48 bg-gray-200 rounded-t-lg"></div>
-                    <CardContent className="p-4">
-                      <div className="h-4 bg-gray-200 rounded mb-2"></div>
-                      <div className="h-3 bg-gray-200 rounded"></div>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
-            ) : (
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                {galleries?.map((gallery) => (
-                  <Card key={gallery.id} className="hover:shadow-lg transition-shadow duration-300 overflow-hidden">
-                    <div className="h-48 bg-gray-200 flex items-center justify-center">
-                      {gallery.photos && gallery.photos[0] ? (
-                        <img 
-                          src={gallery.photos[0].image_url} 
-                          alt={gallery.title}
-                          className="w-full h-full object-cover"
-                        />
-                      ) : (
-                        <Camera size={48} className="text-gray-400" />
+            <div className="text-center mb-12">
+              <h2 className="text-3xl font-bold text-gray-900 mb-4">Galeries Photos</h2>
+              <p className="text-lg text-gray-600">Revivez les moments forts du club</p>
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {galleries?.map((gallery) => (
+                <Card key={gallery.id} className="overflow-hidden hover:shadow-lg transition-shadow">
+                  <div className="h-48 bg-gray-200 flex items-center justify-center">
+                    {gallery.photos && gallery.photos[0] ? (
+                      <img 
+                        src={gallery.photos[0].image_url} 
+                        alt={gallery.title}
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <Camera className="h-16 w-16 text-gray-400" />
+                    )}
+                  </div>
+                  <CardContent className="p-6">
+                    <h3 className="text-xl font-bold mb-2">{gallery.title}</h3>
+                    {gallery.description && (
+                      <p className="text-gray-600 mb-4 line-clamp-2">{gallery.description}</p>
+                    )}
+                    <div className="flex justify-between items-center text-sm text-gray-500">
+                      {gallery.event_date && (
+                        <span>{format(new Date(gallery.event_date), 'dd MMM yyyy', { locale: fr })}</span>
                       )}
+                      <span>{gallery.photos?.length || 0} photos</span>
                     </div>
-                    <CardContent className="p-4">
-                      <h4 className="font-bold text-lg text-gray-900 mb-2">{gallery.title}</h4>
-                      <p className="text-gray-600 text-sm mb-2">{gallery.description}</p>
-                      <div className="flex items-center justify-between text-sm text-gray-500">
-                        <span>{gallery.photos?.length || 0} photos</span>
-                        <span>{format(new Date(gallery.created_at), 'dd/MM/yyyy', { locale: fr })}</span>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
-            )}
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
           </div>
         </section>
 
         {/* Section Contact */}
         <section id="contact" className="py-16 bg-white">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <h3 className="text-3xl font-bold text-center mb-12 text-gray-900">Contactez-nous</h3>
+            <div className="text-center mb-12">
+              <h2 className="text-3xl font-bold text-gray-900 mb-4">Contactez-nous</h2>
+              <p className="text-lg text-gray-600">Nous sommes là pour répondre à vos questions</p>
+            </div>
+            
             <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
+              {/* Informations de contact */}
               <div>
-                <h4 className="text-xl font-bold mb-6 text-gray-900">Informations de Contact</h4>
+                <h3 className="text-xl font-bold mb-6">Informations de contact</h3>
                 <div className="space-y-4">
                   <div className="flex items-center">
-                    <MapPin className="w-6 h-6 text-green-600 mr-3" />
-                    <div>
-                      <p className="font-semibold">Adresse</p>
-                      <p className="text-gray-600">Chorbane, Tunisie</p>
-                    </div>
+                    <MapPin className="h-5 w-5 text-green-600 mr-3" />
+                    <span>Chebba, Mahdia, Tunisie</span>
                   </div>
                   <div className="flex items-center">
-                    <Phone className="w-6 h-6 text-green-600 mr-3" />
-                    <div>
-                      <p className="font-semibold">Téléphone</p>
-                      <p className="text-gray-600">+216 XX XXX XXX</p>
-                    </div>
+                    <Phone className="h-5 w-5 text-green-600 mr-3" />
+                    <span>+216 XX XXX XXX</span>
                   </div>
                   <div className="flex items-center">
-                    <Mail className="w-6 h-6 text-green-600 mr-3" />
-                    <div>
-                      <p className="font-semibold">Email</p>
-                      <p className="text-gray-600">contact@escchorbane.tn</p>
-                    </div>
+                    <Mail className="h-5 w-5 text-green-600 mr-3" />
+                    <span>contact@escchebba.tn</span>
+                  </div>
+                  <div className="flex items-center">
+                    <Clock className="h-5 w-5 text-green-600 mr-3" />
+                    <span>Lun - Ven: 9h00 - 17h00</span>
+                  </div>
+                </div>
+                
+                <div className="mt-8">
+                  <h4 className="font-semibold mb-4">Suivez-nous</h4>
+                  <div className="flex space-x-4">
+                    <a href="#" className="text-green-600 hover:text-green-700">Facebook</a>
+                    <a href="#" className="text-green-600 hover:text-green-700">Instagram</a>
+                    <a href="#" className="text-green-600 hover:text-green-700">Twitter</a>
                   </div>
                 </div>
               </div>
+              
+              {/* Formulaire de contact */}
               <div>
-                <h4 className="text-xl font-bold mb-6 text-gray-900">Envoyez-nous un message</h4>
+                <h3 className="text-xl font-bold mb-6">Envoyez-nous un message</h3>
                 <form className="space-y-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Nom</label>
-                    <input 
-                      type="text" 
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
-                    />
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Nom</label>
+                    <input type="text" className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500" />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Email</label>
-                    <input 
-                      type="email" 
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
-                    />
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                    <input type="email" className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500" />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Message</label>
-                    <textarea 
-                      rows={4}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
-                    ></textarea>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Sujet</label>
+                    <input type="text" className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500" />
                   </div>
-                  <Button className="w-full bg-green-600 hover:bg-green-700">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Message</label>
+                    <textarea rows={4} className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"></textarea>
+                  </div>
+                  <button type="submit" className="w-full bg-green-600 text-white py-2 px-4 rounded-md hover:bg-green-700 transition">
                     Envoyer le message
-                  </Button>
+                  </button>
                 </form>
               </div>
             </div>
           </div>
         </section>
+      </main>
 
-        {/* Footer */}
-        <footer className="bg-gray-900 text-white py-12">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-              <div className="col-span-1 md:col-span-2">
-                <div className="flex items-center space-x-4 mb-4">
-                  <div className="w-12 h-12 bg-green-600 rounded-full flex items-center justify-center">
-                    <span className="text-white font-bold text-xl">ESC</span>
-                  </div>
-                  <div>
-                    <h3 className="text-xl font-bold">Espoir Sportif de Chorbane</h3>
-                    <p className="text-gray-300">Fondé en 1975</p>
-                  </div>
-                </div>
-                <p className="text-gray-300 mb-4">
-                  Club de football amateur tunisien basé à Chorbane. 
-                  Nous portons fièrement les couleurs vert et blanc depuis près de 50 ans.
-                </p>
-              </div>
-
-              <div>
-                <h4 className="text-lg font-semibold mb-4">Navigation</h4>
-                <ul className="space-y-2 text-gray-300">
-                  {navigation.map((item) => (
-                    <li key={item.name}>
-                      <button 
-                        onClick={() => scrollToSection(item.id)}
-                        className="hover:text-green-400 transition-colors"
-                      >
-                        {item.name}
-                      </button>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-
-              <div>
-                <h4 className="text-lg font-semibold mb-4">Contact</h4>
-                <div className="space-y-3 text-gray-300">
-                  <div className="flex items-center">
-                    <MapPin size={16} className="mr-2 text-green-400" />
-                    <span className="text-sm">Chorbane, Tunisie</span>
-                  </div>
-                  <div className="flex items-center">
-                    <Phone size={16} className="mr-2 text-green-400" />
-                    <span className="text-sm">+216 XX XXX XXX</span>
-                  </div>
-                  <div className="flex items-center">
-                    <Mail size={16} className="mr-2 text-green-400" />
-                    <span className="text-sm">contact@escchorbane.tn</span>
-                  </div>
-                </div>
-              </div>
+      {/* Footer */}
+      <footer className="bg-gray-900 text-white py-12">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+            <div>
+              <h3 className="text-xl font-bold mb-4">ESC Chebba</h3>
+              <p className="text-gray-400">
+                Club de football tunisien fondé avec passion et dédié à l'excellence sportive.
+              </p>
             </div>
-
-            <div className="border-t border-gray-800 mt-8 pt-8 text-center text-gray-400">
-              <p>&copy; 2024 Espoir Sportif de Chorbane. Tous droits réservés.</p>
+            <div>
+              <h4 className="font-semibold mb-4">Navigation</h4>
+              <ul className="space-y-2 text-gray-400">
+                <li><a href="#accueil" className="hover:text-white">Accueil</a></li>
+                <li><a href="#equipe" className="hover:text-white">Équipe</a></li>
+                <li><a href="#matchs" className="hover:text-white">Matchs</a></li>
+                <li><a href="#actualites" className="hover:text-white">Actualités</a></li>
+              </ul>
+            </div>
+            <div>
+              <h4 className="font-semibold mb-4">Contact</h4>
+              <ul className="space-y-2 text-gray-400">
+                <li>Chebba, Mahdia</li>
+                <li>+216 XX XXX XXX</li>
+                <li>contact@escchebba.tn</li>
+              </ul>
+            </div>
+            <div>
+              <h4 className="font-semibold mb-4">Suivez-nous</h4>
+              <div className="flex space-x-4">
+                <a href="#" className="text-gray-400 hover:text-white">Facebook</a>
+                <a href="#" className="text-gray-400 hover:text-white">Instagram</a>
+                <a href="#" className="text-gray-400 hover:text-white">Twitter</a>
+              </div>
             </div>
           </div>
-        </footer>
-      </div>
+          <div className="border-t border-gray-800 mt-8 pt-8 text-center text-gray-400">
+            <p>&copy; 2024 Espoir Sportif de Chebba. Tous droits réservés.</p>
+          </div>
+        </div>
+      </footer>
+
+      {/* Dialog pour nouveau match */}
+      {isAuthenticated && (
+        <MatchDialog
+          open={matchDialogOpen}
+          onOpenChange={setMatchDialogOpen}
+        />
+      )}
     </div>
   );
 };
