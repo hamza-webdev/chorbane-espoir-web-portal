@@ -1,3 +1,4 @@
+
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -24,7 +25,7 @@ const Index = () => {
       const { data, error } = await supabase
         .from('articles')
         .select('*')
-        .eq('published', true')
+        .eq('published', true)
         .order('created_at', { ascending: false })
         .limit(3);
       
