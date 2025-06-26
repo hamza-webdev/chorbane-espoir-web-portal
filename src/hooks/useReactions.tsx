@@ -65,7 +65,12 @@ export const useReactions = (entityType: 'article' | 'player' | 'staff' | 'match
         .single();
       
       if (error && error.code !== 'PGRST116') throw error;
-      return data || { reaction_type: null, expires_at: null };
+      
+      // Type assertion pour assurer que reaction_type est du bon type
+      return data ? {
+        reaction_type: data.reaction_type as 'like' | 'dislike',
+        expires_at: data.expires_at
+      } : { reaction_type: null, expires_at: null };
     },
     enabled: !!userIP
   });
