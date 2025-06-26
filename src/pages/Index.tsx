@@ -10,10 +10,13 @@ import { useAuth } from "@/hooks/useAuth";
 import { useState } from "react";
 import MatchDialog from "@/components/dashboard/MatchDialog";
 import Header from "@/components/Header";
+import GalleryModal from "@/components/GalleryModal";
 
 const Index = () => {
   const { isAuthenticated } = useAuth();
   const [matchDialogOpen, setMatchDialogOpen] = useState(false);
+  const [selectedGallery, setSelectedGallery] = useState(null);
+  const [galleryModalOpen, setGalleryModalOpen] = useState(false);
 
   const { data: articles } = useQuery({
     queryKey: ['articles'],
@@ -21,7 +24,7 @@ const Index = () => {
       const { data, error } = await supabase
         .from('articles')
         .select('*')
-        .eq('published', true)
+        .eq('published', true')
         .order('created_at', { ascending: false })
         .limit(3);
       
@@ -106,6 +109,11 @@ const Index = () => {
   const nextMatch = matches?.find(match => 
     new Date(match.match_date) > new Date() && match.status === 'a_venir'
   );
+
+  const handleGalleryClick = (gallery: any) => {
+    setSelectedGallery(gallery);
+    setGalleryModalOpen(true);
+  };
 
   return (
     <div className="min-h-screen">
@@ -394,7 +402,11 @@ const Index = () => {
             
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
               {galleries?.map((gallery) => (
-                <Card key={gallery.id} className="overflow-hidden hover:shadow-lg transition-shadow">
+                <Card 
+                  key={gallery.id} 
+                  className="overflow-hidden hover:shadow-lg transition-shadow cursor-pointer"
+                  onClick={() => handleGalleryClick(gallery)}
+                >
                   <div className="h-48 bg-gray-200 flex items-center justify-center">
                     {gallery.photos && gallery.photos[0] ? (
                       <img 
@@ -416,6 +428,12 @@ const Index = () => {
                         <span>{format(new Date(gallery.event_date), 'dd MMM yyyy', { locale: fr })}</span>
                       )}
                       <span>{gallery.photos?.length || 0} photos</span>
+                    </div>
+                    <div className="mt-4">
+                      <Button variant="outline" size="sm" className="w-full">
+                        <Camera className="h-4 w-4 mr-2" />
+                        Voir les photos
+                      </Button>
                     </div>
                   </CardContent>
                 </Card>
@@ -544,6 +562,13 @@ const Index = () => {
           onOpenChange={setMatchDialogOpen}
         />
       )}
+
+      {/* Modal pour galerie */}
+      <GalleryModal
+        gallery={selectedGallery}
+        open={galleryModalOpen}
+        onOpenChange={setGalleryModalOpen}
+      />
     </div>
   );
 };
