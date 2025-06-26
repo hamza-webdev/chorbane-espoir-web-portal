@@ -1,7 +1,7 @@
 
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Menu, X } from "lucide-react";
+import { Menu, X, LogIn } from "lucide-react";
 import { Link } from "react-router-dom";
 
 const Header = () => {
@@ -13,8 +13,7 @@ const Header = () => {
     { name: "Matchs", href: "/matchs" },
     { name: "Actualités", href: "/actualites" },
     { name: "Galeries", href: "/galeries" },
-    { name: "Contact", href: "/contact" },
-    { name: "Dashboard", href: "/dashboard" }
+    { name: "Contact", href: "/contact" }
   ];
 
   return (
@@ -32,7 +31,7 @@ const Header = () => {
           </div>
 
           {/* Desktop Navigation */}
-          <nav className="hidden md:flex space-x-8">
+          <nav className="hidden md:flex items-center space-x-8">
             {navigation.map((item) => (
               <Link
                 key={item.name}
@@ -42,6 +41,12 @@ const Header = () => {
                 {item.name}
               </Link>
             ))}
+            <Link to="/auth">
+              <Button variant="outline" className="flex items-center gap-2">
+                <LogIn size={16} />
+                Dashboard
+              </Button>
+            </Link>
           </nav>
 
           {/* Mobile menu button */}
@@ -68,6 +73,13 @@ const Header = () => {
                   {item.name}
                 </Link>
               ))}
+              <Link
+                to="/auth"
+                className="text-gray-700 hover:text-green-600 font-medium transition-colors duration-200 py-2"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                Dashboard
+              </Link>
             </nav>
           </div>
         )}
