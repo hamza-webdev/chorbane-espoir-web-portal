@@ -38,22 +38,27 @@ const Donations = () => {
     refetchOnWindowFocus: false,
   });
 
-  // Calculate total amount with proper number conversion
+  // Calculate total amount with proper error handling
   const totalAmount = donations?.reduce((sum, donation) => {
     console.log('Processing donation amount:', donation.amount, 'type:', typeof donation.amount);
-    let amount = 0;
     
-    if (typeof donation.amount === 'string') {
-      amount = parseFloat(donation.amount);
-    } else if (typeof donation.amount === 'number') {
-      amount = donation.amount;
+    // Handle different amount formats
+    let amount = 0;
+    if (donation.amount !== null && donation.amount !== undefined) {
+      if (typeof donation.amount === 'string') {
+        const parsed = parseFloat(donation.amount);
+        amount = isNaN(parsed) ? 0 : parsed;
+      } else if (typeof donation.amount === 'number') {
+        amount = donation.amount;
+      }
     }
     
-    return sum + (isNaN(amount) ? 0 : amount);
+    console.log('Converted amount:', amount);
+    return sum + amount;
   }, 0) || 0;
 
   console.log('Total amount calculated:', totalAmount);
-  console.log('Donations data:', donations);
+  console.log('Number of donations:', donations?.length || 0);
 
   const fundUsageItems = [
     {
@@ -120,15 +125,18 @@ const Donations = () => {
                 <p className="text-gray-600 mb-4">
                   {t("donations.impact_description")}
                 </p>
-                <div className="bg-green-50 p-4 rounded-lg">
-                  <div className="text-2xl font-bold text-green-600">
-                    {totalAmount.toFixed(2)} {t("donations.currency")}
+                <div className="bg-green-50 p-4 rounded-lg border border-green-200">
+                  <div className="text-3xl font-bold text-green-600 mb-1">
+                    {totalAmount.toLocaleString('fr-FR', { 
+                      minimumFractionDigits: 2, 
+                      maximumFractionDigits: 2 
+                    })} DT
                   </div>
-                  <p className="text-sm text-green-700">
+                  <p className="text-sm text-green-700 font-medium">
                     {t("donations.total_raised", "Total collecté")}
                   </p>
                   <p className="text-xs text-green-600 mt-1">
-                    {donations?.length || 0} donation(s) reçue(s)
+                    {donations?.length || 0} donation{(donations?.length || 0) > 1 ? 's' : ''} reçue{(donations?.length || 0) > 1 ? 's' : ''}
                   </p>
                 </div>
               </CardContent>
@@ -189,11 +197,15 @@ const Donations = () => {
                 ) : donations && donations.length > 0 ? (
                   <div className="space-y-3 max-h-96 overflow-y-auto">
                     {donations.map((donation) => {
+                      // Handle amount conversion with better error handling
                       let amount = 0;
-                      if (typeof donation.amount === 'string') {
-                        amount = parseFloat(donation.amount);
-                      } else if (typeof donation.amount === 'number') {
-                        amount = donation.amount;
+                      if (donation.amount !== null && donation.amount !== undefined) {
+                        if (typeof donation.amount === 'string') {
+                          const parsed = parseFloat(donation.amount);
+                          amount = isNaN(parsed) ? 0 : parsed;
+                        } else if (typeof donation.amount === 'number') {
+                          amount = donation.amount;
+                        }
                       }
                       
                       return (
@@ -201,7 +213,7 @@ const Donations = () => {
                           <div className="flex-1">
                             <div className="flex items-center gap-2 mb-1">
                               <p className="font-medium text-gray-900">
-                                {donation.is_anonymous ? t("donations.anonymous_donor", "Donateur anonyme") : donation.donor_name}
+                                {donation.is_anonymous ? t("donations.anonymous_donor", "Donateur anonyme") : (donation.donor_name || "Donateur")}
                               </p>
                               {donation.payment_method && (
                                 <Badge variant="outline" className="text-xs">
@@ -220,7 +232,10 @@ const Donations = () => {
                           </div>
                           <div className="text-right ml-4">
                             <div className="text-lg font-bold text-green-600">
-                              {isNaN(amount) ? '0.00' : amount.toFixed(2)} {donation.currency || 'DT'}
+                              {amount.toLocaleString('fr-FR', { 
+                                minimumFractionDigits: 2, 
+                                maximumFractionDigits: 2 
+                              })} {donation.currency || 'DT'}
                             </div>
                             <Badge 
                               variant={donation.status === 'completed' ? 'default' : 'secondary'} 
