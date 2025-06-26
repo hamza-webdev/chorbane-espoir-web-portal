@@ -9,6 +9,7 @@ import { fr } from "date-fns/locale";
 import { useAuth } from "@/hooks/useAuth";
 import { useState } from "react";
 import MatchDialog from "@/components/dashboard/MatchDialog";
+import Header from "@/components/Header";
 
 const Index = () => {
   const { isAuthenticated } = useAuth();
@@ -108,34 +109,11 @@ const Index = () => {
 
   return (
     <div className="min-h-screen">
-      {/* Header fixe */}
-      <header className="fixed top-0 left-0 right-0 bg-white shadow-md z-50">
-        <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            <div className="flex items-center">
-              <div className="flex-shrink-0">
-                <span className="text-2xl font-bold text-green-600">ESC</span>
-              </div>
-            </div>
-            <div className="hidden md:block">
-              <div className="ml-10 flex items-baseline space-x-4">
-                <a href="#accueil" className="text-gray-700 hover:text-green-600 px-3 py-2 text-sm font-medium">Accueil</a>
-                <a href="#equipe" className="text-gray-700 hover:text-green-600 px-3 py-2 text-sm font-medium">Équipe</a>
-                <a href="#matchs" className="text-gray-700 hover:text-green-600 px-3 py-2 text-sm font-medium">Matchs</a>
-                <a href="#actualites" className="text-gray-700 hover:text-green-600 px-3 py-2 text-sm font-medium">Actualités</a>
-                <a href="#galeries" className="text-gray-700 hover:text-green-600 px-3 py-2 text-sm font-medium">Galeries</a>
-                <a href="#contact" className="text-gray-700 hover:text-green-600 px-3 py-2 text-sm font-medium">Contact</a>
-                {isAuthenticated && (
-                  <a href="/dashboard" className="bg-green-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-green-700">Dashboard</a>
-                )}
-              </div>
-            </div>
-          </div>
-        </nav>
-      </header>
+      {/* Utiliser le composant Header existant */}
+      <Header />
 
-      {/* Contenu principal avec padding-top pour compenser le header fixe */}
-      <main className="pt-16">
+      {/* Contenu principal */}
+      <main>
         {/* Section Accueil */}
         <section id="accueil" className="bg-gradient-to-r from-green-600 to-green-800 text-white">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24">
