@@ -1,297 +1,241 @@
 
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
+import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
-import { Heart, Users, Building, GraduationCap, Car, CreditCard, DollarSign } from "lucide-react";
+import { Plus, Trash2, Eye, EyeOff } from "lucide-react";
+import { format } from "date-fns";
+import { fr } from "date-fns/locale";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import DonationFormDialog from "./DonationFormDialog";
 
 const DonationsManager = () => {
   const { t } = useTranslation();
   const { toast } = useToast();
-  const [isProcessing, setIsProcessing] = useState(false);
-  const [formData, setFormData] = useState({
-    amount: "",
-    donorName: "",
-    donorEmail: "",
-    donorPhone: "",
-    isAnonymous: false,
-    paymentMethod: ""
+  const [dialogOpen, setDialogOpen] = useState(false);
+
+  const { data: donations, isLoading, refetch } = useQuery({
+    queryKey: ['admin-donations'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('donations')
+        .select('*')
+        .order('created_at', { ascending: false });
+      
+      if (error) throw error;
+      return data;
+    }
   });
 
-  const suggestedAmounts = [25, 50, 100, 200, 500];
-
-  const fundUsageItems = [
-    {
-      icon: Users,
-      title: t("donations.equipment"),
-      description: t("donations.equipment_desc"),
-      color: "text-blue-600"
-    },
-    {
-      icon: Building,
-      title: t("donations.infrastructure"),
-      description: t("donations.infrastructure_desc"),
-      color: "text-green-600"
-    },
-    {
-      icon: GraduationCap,
-      title: t("donations.training"),
-      description: t("donations.training_desc"),
-      color: "text-purple-600"
-    },
-    {
-      icon: Car,
-      title: t("donations.transport"),
-      description: t("donations.transport_desc"),
-      color: "text-orange-600"
-    }
-  ];
-
-  const handleInputChange = (field: string, value: string | boolean) => {
-    setFormData(prev => ({
-      ...prev,
-      [field]: value
-    }));
-  };
-
-  const handleSuggestedAmount = (amount: number) => {
-    setFormData(prev => ({
-      ...prev,
-      amount: amount.toString()
-    }));
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (!formData.amount || !formData.paymentMethod) {
-      toast({
-        title: t("common.error"),
-        description: "Veuillez remplir tous les champs obligatoires",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    if (!formData.isAnonymous && (!formData.donorName || !formData.donorEmail)) {
-      toast({
-        title: t("common.error"),
-        description: "Veuillez remplir vos informations de contact",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    setIsProcessing(true);
-
+  const handleDelete = async (id: string) => {
     try {
-      // Simulate payment processing
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
-      toast({
-        title: t("donations.thank_you"),
-        description: t("donations.success_message"),
-      });
+      const { error } = await supabase
+        .from('donations')
+        .delete()
+        .eq('id', id);
 
-      // Reset form
-      setFormData({
-        amount: "",
-        donorName: "",
-        donorEmail: "",
-        donorPhone: "",
-        isAnonymous: false,
-        paymentMethod: ""
-      });
-    } catch (error) {
+      if (error) throw error;
+
       toast({
-        title: t("common.error"),
-        description: t("donations.error_message"),
+        title: "Donation supprimée",
+        description: "La donation a été supprimée avec succès",
+      });
+      
+      refetch();
+    } catch (error) {
+      console.error('Error deleting donation:', error);
+      toast({
+        title: "Erreur",
+        description: "Impossible de supprimer la donation",
         variant: "destructive",
       });
-    } finally {
-      setIsProcessing(false);
     }
   };
+
+  const totalAmount = donations?.reduce((sum, donation) => {
+    const amount = typeof donation.amount === 'string' 
+      ? parseFloat(donation.amount) 
+      : donation.amount;
+    return sum + (isNaN(amount) ? 0 : amount);
+  }, 0) || 0;
+
+  const completedDonations = donations?.filter(d => d.status === 'completed').length || 0;
+  const pendingDonations = donations?.filter(d => d.status === 'pending').length || 0;
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="text-center">
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">
-          {t("donations.title")}
-        </h1>
-        <p className="text-gray-600 text-lg">
-          {t("donations.subtitle")}
-        </p>
+      <div className="flex justify-between items-center">
+        <div>
+          <h2 className="text-2xl font-bold">Gestion des Donations</h2>
+          <p className="text-gray-600">Gérer les donations reçues par le club</p>
+        </div>
+        <Button onClick={() => setDialogOpen(true)}>
+          <Plus size={16} className="mr-2" />
+          Ajouter une donation
+        </Button>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Impact and Fund Usage */}
-        <div className="space-y-6">
-          {/* Impact Section */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Heart className="h-5 w-5 text-red-500" />
-                {t("donations.impact_title")}
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-gray-600">
-                {t("donations.impact_description")}
-              </p>
-            </CardContent>
-          </Card>
-
-          {/* Fund Usage */}
-          <Card>
-            <CardHeader>
-              <CardTitle>{t("donations.fund_usage")}</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {fundUsageItems.map((item, index) => {
-                  const Icon = item.icon;
-                  return (
-                    <div key={index} className="flex items-start gap-3 p-3 bg-gray-50 rounded-lg">
-                      <Icon className={`h-5 w-5 mt-1 ${item.color}`} />
-                      <div>
-                        <h4 className="font-medium text-gray-900">{item.title}</h4>
-                        <p className="text-sm text-gray-600">{item.description}</p>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Donation Form */}
+      {/* Statistics Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <DollarSign className="h-5 w-5 text-green-600" />
-              {t("donations.donation_form")}
-            </CardTitle>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium text-gray-600">Total Collecté</CardTitle>
           </CardHeader>
           <CardContent>
-            <form onSubmit={handleSubmit} className="space-y-4">
-              {/* Suggested Amounts */}
-              <div>
-                <Label className="text-sm font-medium mb-2 block">
-                  {t("donations.suggested_amounts")}
-                </Label>
-                <div className="grid grid-cols-5 gap-2 mb-3">
-                  {suggestedAmounts.map((amount) => (
-                    <Button
-                      key={amount}
-                      type="button"
-                      variant={formData.amount === amount.toString() ? "default" : "outline"}
-                      size="sm"
-                      onClick={() => handleSuggestedAmount(amount)}
-                      className="text-xs"
-                    >
-                      {amount} {t("donations.currency")}
-                    </Button>
-                  ))}
-                </div>
-              </div>
-
-              {/* Custom Amount */}
-              <div>
-                <Label htmlFor="amount">{t("donations.amount")} *</Label>
-                <Input
-                  id="amount"
-                  type="number"
-                  placeholder={t("donations.amount_placeholder")}
-                  value={formData.amount}
-                  onChange={(e) => handleInputChange("amount", e.target.value)}
-                  required
-                />
-              </div>
-
-              {/* Anonymous Donation Checkbox */}
-              <div className="flex items-center space-x-2">
-                <Checkbox
-                  id="anonymous"
-                  checked={formData.isAnonymous}
-                  onCheckedChange={(checked) => handleInputChange("isAnonymous", checked)}
-                />
-                <Label htmlFor="anonymous" className="text-sm">
-                  {t("donations.anonymous")}
-                </Label>
-              </div>
-
-              {/* Donor Information (if not anonymous) */}
-              {!formData.isAnonymous && (
-                <div className="space-y-4 p-4 bg-gray-50 rounded-lg">
-                  <div>
-                    <Label htmlFor="donorName">{t("donations.donor_name")} *</Label>
-                    <Input
-                      id="donorName"
-                      placeholder={t("donations.donor_name_placeholder")}
-                      value={formData.donorName}
-                      onChange={(e) => handleInputChange("donorName", e.target.value)}
-                      required={!formData.isAnonymous}
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="donorEmail">{t("donations.donor_email")} *</Label>
-                    <Input
-                      id="donorEmail"
-                      type="email"
-                      placeholder={t("donations.donor_email_placeholder")}
-                      value={formData.donorEmail}
-                      onChange={(e) => handleInputChange("donorEmail", e.target.value)}
-                      required={!formData.isAnonymous}
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="donorPhone">{t("donations.donor_phone")}</Label>
-                    <Input
-                      id="donorPhone"
-                      placeholder={t("donations.donor_phone_placeholder")}
-                      value={formData.donorPhone}
-                      onChange={(e) => handleInputChange("donorPhone", e.target.value)}
-                    />
-                  </div>
-                </div>
-              )}
-
-              {/* Payment Method */}
-              <div>
-                <Label htmlFor="paymentMethod">{t("donations.payment_method")} *</Label>
-                <Select value={formData.paymentMethod} onValueChange={(value) => handleInputChange("paymentMethod", value)}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Choisir une méthode de paiement" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="smt">{t("donations.smt_gateway")}</SelectItem>
-                    <SelectItem value="paypal">{t("donations.paypal")}</SelectItem>
-                    <SelectItem value="card">{t("donations.card")}</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              {/* Submit Button */}
-              <Button
-                type="submit"
-                className="w-full"
-                disabled={isProcessing}
-              >
-                <CreditCard className="h-4 w-4 mr-2" />
-                {isProcessing ? t("donations.processing") : t("donations.donate_now")}
-              </Button>
-            </form>
+            <div className="text-2xl font-bold text-green-600">
+              {totalAmount.toLocaleString('fr-FR', { 
+                minimumFractionDigits: 2, 
+                maximumFractionDigits: 2 
+              })} DT
+            </div>
+          </CardContent>
+        </Card>
+        
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium text-gray-600">Donations Confirmées</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-blue-600">{completedDonations}</div>
+          </CardContent>
+        </Card>
+        
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium text-gray-600">En Attente</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-orange-600">{pendingDonations}</div>
           </CardContent>
         </Card>
       </div>
+
+      {/* Donations List */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Liste des Donations</CardTitle>
+          <CardDescription>
+            Toutes les donations reçues par le club
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          {isLoading ? (
+            <div className="flex justify-center py-8">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600"></div>
+            </div>
+          ) : donations && donations.length > 0 ? (
+            <div className="space-y-4">
+              {donations.map((donation) => {
+                const amount = typeof donation.amount === 'string' 
+                  ? parseFloat(donation.amount) 
+                  : donation.amount;
+                
+                return (
+                  <div key={donation.id} className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-2">
+                        <div className="flex items-center gap-2">
+                          {donation.is_anonymous ? (
+                            <EyeOff className="h-4 w-4 text-gray-400" />
+                          ) : (
+                            <Eye className="h-4 w-4 text-gray-400" />
+                          )}
+                          <span className="font-medium">
+                            {donation.donor_name || "Donateur"}
+                          </span>
+                        </div>
+                        <Badge variant={donation.status === 'completed' ? 'default' : 'secondary'}>
+                          {donation.status === 'completed' ? 'Confirmé' : 'En attente'}
+                        </Badge>
+                        {donation.payment_method && (
+                          <Badge variant="outline" className="text-xs">
+                            {donation.payment_method.toUpperCase()}
+                          </Badge>
+                        )}
+                      </div>
+                      
+                      <div className="text-sm text-gray-600 space-y-1">
+                        <p>📅 {format(new Date(donation.created_at), 'dd/MM/yyyy à HH:mm', { locale: fr })}</p>
+                        {donation.donor_email && (
+                          <p>📧 {donation.donor_email}</p>
+                        )}
+                        {donation.donor_phone && (
+                          <p>📞 {donation.donor_phone}</p>
+                        )}
+                        {donation.message && (
+                          <p className="italic bg-gray-100 p-2 rounded text-xs mt-2">
+                            💬 "{donation.message}"
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                    
+                    <div className="flex items-center gap-4">
+                      <div className="text-right">
+                        <div className="text-lg font-bold text-green-600">
+                          {(isNaN(amount) ? 0 : amount).toLocaleString('fr-FR', { 
+                            minimumFractionDigits: 2, 
+                            maximumFractionDigits: 2 
+                          })} {donation.currency || 'DT'}
+                        </div>
+                      </div>
+                      
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <Button variant="outline" size="sm" className="text-red-600 hover:text-red-700">
+                            <Trash2 size={16} />
+                          </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>Supprimer la donation</AlertDialogTitle>
+                            <AlertDialogDescription>
+                              Êtes-vous sûr de vouloir supprimer cette donation ? Cette action est irréversible.
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>Annuler</AlertDialogCancel>
+                            <AlertDialogAction
+                              onClick={() => handleDelete(donation.id)}
+                              className="bg-red-600 hover:bg-red-700"
+                            >
+                              Supprimer
+                            </AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          ) : (
+            <div className="text-center py-12">
+              <p className="text-gray-600">Aucune donation enregistrée</p>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      <DonationFormDialog
+        open={dialogOpen}
+        onOpenChange={setDialogOpen}
+        onSuccess={refetch}
+      />
     </div>
   );
 };
