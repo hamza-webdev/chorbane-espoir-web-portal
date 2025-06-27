@@ -9,6 +9,7 @@ import { Switch } from "@/components/ui/switch";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import PhotoUpload from "@/components/ui/photo-upload";
 
 interface ArticleDialogProps {
   open: boolean;
@@ -89,6 +90,10 @@ const ArticleDialog = ({ open, onOpenChange, article }: ArticleDialogProps) => {
     saveMutation.mutate(formData);
   };
 
+  const handleFeaturedImageChange = (photoUrl: string) => {
+    setFormData({ ...formData, featured_image: photoUrl });
+  };
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
@@ -143,15 +148,12 @@ const ArticleDialog = ({ open, onOpenChange, article }: ArticleDialogProps) => {
             />
           </div>
 
-          <div>
-            <Label htmlFor="featured_image">Image à la une (URL)</Label>
-            <Input
-              id="featured_image"
-              value={formData.featured_image}
-              onChange={(e) => setFormData({ ...formData, featured_image: e.target.value })}
-              placeholder="URL de l'image à la une"
-            />
-          </div>
+          <PhotoUpload
+            currentPhoto={formData.featured_image}
+            onPhotoChange={handleFeaturedImageChange}
+            label="Image à la une"
+            folder="articles"
+          />
 
           <div className="flex items-center space-x-2">
             <Switch
