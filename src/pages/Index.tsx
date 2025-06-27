@@ -13,6 +13,7 @@ import MatchDialog from "@/components/dashboard/MatchDialog";
 import Header from "@/components/Header";
 import GalleryModal from "@/components/GalleryModal";
 import ReactionButtons from "@/components/ReactionButtons";
+import DonationsSection from "@/components/DonationsSection";
 
 const Index = () => {
   const { isAuthenticated } = useAuth();
@@ -137,18 +138,23 @@ const Index = () => {
                 {t('hero.subtitle')}
               </p>
               <div className="flex justify-center space-x-4">
-                <a href="#equipe" className="bg-white text-green-600 px-6 py-3 rounded-lg font-semibold hover:bg-gray-100 transition">
+                <button 
+                  onClick={() => document.querySelector('#equipe')?.scrollIntoView({ behavior: 'smooth' })}
+                  className="bg-white text-green-600 px-6 py-3 rounded-lg font-semibold hover:bg-gray-100 transition"
+                >
                   {t('hero.discover_team')}
-                </a>
-                <a href="#matchs" className="border-2 border-white text-white px-6 py-3 rounded-lg font-semibold hover:bg-white hover:text-green-600 transition">
+                </button>
+                <button 
+                  onClick={() => document.querySelector('#matchs')?.scrollIntoView({ behavior: 'smooth' })}
+                  className="border-2 border-white text-white px-6 py-3 rounded-lg font-semibold hover:bg-white hover:text-green-600 transition"
+                >
                   {t('hero.view_matches')}
-                </a>
+                </button>
               </div>
             </div>
           </div>
         </section>
 
-        {/* Prochain match en vedette */}
         {nextMatch && (
           <section className="bg-gray-50 py-16">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -193,7 +199,7 @@ const Index = () => {
             </div>
           </section>
         )}
-
+        
         {/* Section Équipe */}
         <section id="equipe" className="py-16 bg-white">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -470,6 +476,9 @@ const Index = () => {
           </div>
         </section>
 
+        {/* Section Donations */}
+        <DonationsSection />
+
         {/* Section Contact */}
         <section id="contact" className="py-16 bg-white">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -552,10 +561,10 @@ const Index = () => {
             <div>
               <h4 className="font-semibold mb-4">{t('footer.navigation')}</h4>
               <ul className="space-y-2 text-gray-400">
-                <li><a href="#accueil" className="hover:text-white">{t('header.home')}</a></li>
-                <li><a href="#equipe" className="hover:text-white">{t('header.team')}</a></li>
-                <li><a href="#matchs" className="hover:text-white">{t('header.matches')}</a></li>
-                <li><a href="#actualites" className="hover:text-white">{t('header.news')}</a></li>
+                <li><button onClick={() => document.querySelector('#accueil')?.scrollIntoView({ behavior: 'smooth' })} className="hover:text-white">{t('header.home')}</button></li>
+                <li><button onClick={() => document.querySelector('#equipe')?.scrollIntoView({ behavior: 'smooth' })} className="hover:text-white">{t('header.team')}</button></li>
+                <li><button onClick={() => document.querySelector('#matchs')?.scrollIntoView({ behavior: 'smooth' })} className="hover:text-white">{t('header.matches')}</button></li>
+                <li><button onClick={() => document.querySelector('#actualites')?.scrollIntoView({ behavior: 'smooth' })} className="hover:text-white">{t('header.news')}</button></li>
               </ul>
             </div>
             <div>
