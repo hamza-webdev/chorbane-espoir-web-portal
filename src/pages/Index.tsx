@@ -492,7 +492,7 @@ const Index = () => {
                   </div>
                   <div className="flex items-center">
                     <Mail className="h-5 w-5 text-green-600 mr-3" />
-                    <span>contact@escchebba.tn</span>
+                    <span>contact@escchorbane.tn</span>
                   </div>
                   <div className="flex items-center">
                     <Clock className="h-5 w-5 text-green-600 mr-3" />
@@ -544,7 +544,7 @@ const Index = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
             <div>
-              <h3 className="text-xl font-bold mb-4">ESC Chebba</h3>
+              <h3 className="text-xl font-bold mb-4">ESC Chorbane</h3>
               <p className="text-gray-400">
                 {t('footer.description')}
               </p>
@@ -561,9 +561,9 @@ const Index = () => {
             <div>
               <h4 className="font-semibold mb-4">{t('header.contact')}</h4>
               <ul className="space-y-2 text-gray-400">
-                <li>Chebba, Mahdia</li>
+                <li>Chorbane, Mahdia</li>
                 <li>+216 XX XXX XXX</li>
-                <li>contact@escchebba.tn</li>
+                <li>contact@eschorbane.tn</li>
               </ul>
             </div>
             <div>
