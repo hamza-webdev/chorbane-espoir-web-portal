@@ -134,12 +134,11 @@ const StaffDialog = ({ open, onOpenChange, staff }: StaffDialogProps) => {
                 <SelectValue placeholder="Sélectionner un rôle" />
               </SelectTrigger>
               <SelectContent>
+                <SelectItem value="president">President</SelectItem>
                 <SelectItem value="entraineur">Entraîneur</SelectItem>
-                <SelectItem value="entraineur_adjoint">Entraîneur adjoint</SelectItem>
-                <SelectItem value="preparateur_physique">Préparateur physique</SelectItem>
-                <SelectItem value="medecin">Médecin</SelectItem>
+                <SelectItem value="administration">Administration</SelectItem>                
                 <SelectItem value="manager">Manager</SelectItem>
-                <SelectItem value="autre">Autre</SelectItem>
+               
               </SelectContent>
             </Select>
           </div>

@@ -72,12 +72,10 @@ const StaffManager = () => {
 
   const getRoleLabel = (role: string) => {
     const roles = {
+      'president': 'President',
       'entraineur': 'Entraîneur',
-      'entraineur_adjoint': 'Entraîneur adjoint',
-      'preparateur_physique': 'Préparateur physique',
-      'medecin': 'Médecin',
-      'manager': 'Manager',
-      'autre': 'Autre'
+      'administration': 'Administration',
+      'manager': 'Manager'
     };
     return roles[role] || role;
   };
