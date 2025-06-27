@@ -162,7 +162,7 @@ const DonationsSection = () => {
                   ×
                 </Button>
               </div>
-              <DonationForm onSuccess={() => setShowDonationForm(false)} />
+              <DonationForm onDonationSuccess={() => setShowDonationForm(false)} />
             </div>
           </div>
         )}
