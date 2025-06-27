@@ -13,7 +13,6 @@ import MatchDialog from "@/components/dashboard/MatchDialog";
 import Header from "@/components/Header";
 import GalleryModal from "@/components/GalleryModal";
 import ReactionButtons from "@/components/ReactionButtons";
-import DonationsSection from "@/components/DonationsSection";
 
 const Index = () => {
   const { isAuthenticated } = useAuth();
@@ -475,9 +474,6 @@ const Index = () => {
             </div>
           </div>
         </section>
-
-        {/* Section Donations */}
-        <DonationsSection />
 
         {/* Section Contact */}
         <section id="contact" className="py-16 bg-white">

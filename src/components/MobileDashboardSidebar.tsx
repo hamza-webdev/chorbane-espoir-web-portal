@@ -1,7 +1,7 @@
 
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Menu, X, FileText, Users, UserCheck, Calendar, Trophy, Camera, Heart } from "lucide-react";
+import { Menu, X, FileText, Users, UserCheck, Calendar, Trophy, Camera, Heart, CreditCard } from "lucide-react";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 
 interface MobileDashboardSidebarProps {
@@ -20,6 +20,7 @@ const MobileDashboardSidebar = ({ activeTab, onTabChange }: MobileDashboardSideb
     { id: "competitions", label: "Compétitions", icon: Trophy },
     { id: "galleries", label: "Galeries", icon: Camera },
     { id: "donations", label: "Donations", icon: Heart },
+    { id: "subscriptions", label: "Abonnements", icon: CreditCard },
   ];
 
   const handleTabClick = (tabId: string) => {

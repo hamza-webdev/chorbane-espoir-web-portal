@@ -390,10 +390,12 @@ export type Database = {
       match_status: "a_venir" | "en_cours" | "termine" | "reporte"
       player_position: "gardien" | "defenseur" | "milieu" | "attaquant"
       staff_role:
-        | "president"
         | "entraineur"
-        | "administration"
+        | "entraineur_adjoint"
+        | "preparateur_physique"
+        | "medecin"
         | "manager"
+        | "autre"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -513,10 +515,12 @@ export const Constants = {
       match_status: ["a_venir", "en_cours", "termine", "reporte"],
       player_position: ["gardien", "defenseur", "milieu", "attaquant"],
       staff_role: [
-        "president",
         "entraineur",
-        "administration",       
-        "manager"
+        "entraineur_adjoint",
+        "preparateur_physique",
+        "medecin",
+        "manager",
+        "autre",
       ],
     },
   },

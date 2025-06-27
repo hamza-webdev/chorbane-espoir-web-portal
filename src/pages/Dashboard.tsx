@@ -1,7 +1,7 @@
 
 import { useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Users, FileText, Trophy, Calendar, Camera, UserCheck, Heart } from "lucide-react";
+import { Users, FileText, Trophy, Calendar, Camera, UserCheck, Heart, CreditCard } from "lucide-react";
 import ArticlesManager from "@/components/dashboard/ArticlesManager";
 import PlayersManager from "@/components/dashboard/PlayersManager";
 import StaffManager from "@/components/dashboard/StaffManager";
@@ -9,6 +9,7 @@ import MatchesManager from "@/components/dashboard/MatchesManager";
 import CompetitionsManager from "@/components/dashboard/CompetitionsManager";
 import GalleriesManager from "@/components/dashboard/GalleriesManager";
 import DonationsManager from "@/components/dashboard/DonationsManager";
+import SubscriptionsManager from "@/components/dashboard/SubscriptionsManager";
 import DashboardHeader from "@/components/DashboardHeader";
 import MobileDashboardSidebar from "@/components/MobileDashboardSidebar";
 import ProtectedRoute from "@/components/ProtectedRoute";
@@ -27,7 +28,7 @@ const Dashboard = () => {
             <MobileDashboardSidebar activeTab={activeTab} onTabChange={setActiveTab} />
 
             {/* Desktop Tabs */}
-            <TabsList className="hidden md:grid w-full grid-cols-4 md:grid-cols-7 lg:grid-cols-7 h-auto">
+            <TabsList className="hidden md:grid w-full grid-cols-4 md:grid-cols-8 lg:grid-cols-8 h-auto">
               <TabsTrigger value="articles" className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm p-2 sm:p-3">
                 <FileText size={14} className="sm:size-4" />
                 <span className="hidden sm:inline">Articles</span>
@@ -63,6 +64,11 @@ const Dashboard = () => {
                 <span className="hidden sm:inline">Donations</span>
                 <span className="sm:hidden">Don.</span>
               </TabsTrigger>
+              <TabsTrigger value="subscriptions" className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm p-2 sm:p-3">
+                <CreditCard size={14} className="sm:size-4" />
+                <span className="hidden sm:inline">Abonnements</span>
+                <span className="sm:hidden">Abo.</span>
+              </TabsTrigger>
             </TabsList>
 
             <TabsContent value="articles">
@@ -91,6 +97,10 @@ const Dashboard = () => {
 
             <TabsContent value="donations">
               <DonationsManager />
+            </TabsContent>
+
+            <TabsContent value="subscriptions">
+              <SubscriptionsManager />
             </TabsContent>
           </Tabs>
         </div>
