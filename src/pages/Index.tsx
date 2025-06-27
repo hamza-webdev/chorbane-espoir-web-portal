@@ -13,6 +13,8 @@ import MatchDialog from "@/components/dashboard/MatchDialog";
 import Header from "@/components/Header";
 import GalleryModal from "@/components/GalleryModal";
 import ReactionButtons from "@/components/ReactionButtons";
+import DonationsSection from "@/components/DonationsSection";
+import DonationStats from "@/components/DonationStats";
 
 const Index = () => {
   const { isAuthenticated } = useAuth();
@@ -475,8 +477,24 @@ const Index = () => {
           </div>
         </section>
 
+        {/* Section Dons */}
+        <section id="donations" className="py-16 bg-white">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="text-center mb-12">
+              <h2 className="text-3xl font-bold text-gray-900 mb-4">{t('donations.title')}</h2>
+              <p className="text-lg text-gray-600">{t('donations.subtitle')}</p>
+            </div>
+            
+            <DonationStats />
+            
+            <div className="mt-16">
+              <DonationsSection />
+            </div>
+          </div>
+        </section>
+
         {/* Section Contact */}
-        <section id="contact" className="py-16 bg-white">
+        <section id="contact" className="py-16 bg-gray-50">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-12">
               <h2 className="text-3xl font-bold text-gray-900 mb-4">{t('contact.title')}</h2>
