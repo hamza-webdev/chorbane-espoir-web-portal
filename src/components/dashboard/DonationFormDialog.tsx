@@ -65,18 +65,22 @@ const DonationFormDialog = ({ open, onOpenChange, onSuccess }: DonationFormDialo
     try {
       console.log('Creating donation:', formData);
       
+      // Préparer les données selon la nouvelle structure
+      const donationData = {
+        donor_name: formData.isAnonymous ? 'Donateur anonyme' : formData.donorName,
+        donor_email: formData.isAnonymous ? null : (formData.donorEmail || null),
+        donor_phone: formData.isAnonymous ? null : (formData.donorPhone || null),
+        amount: parseFloat(formData.amount),
+        currency: 'DT',
+        payment_method: formData.paymentMethod,
+        is_anonymous: formData.isAnonymous,
+        message: formData.message || null,
+        status: formData.status
+      };
+
       const { data, error } = await supabase
         .from('donations')
-        .insert({
-          donor_name: formData.isAnonymous ? 'Donateur anonyme' : formData.donorName,
-          donor_email: formData.isAnonymous ? null : formData.donorEmail,
-          donor_phone: formData.isAnonymous ? null : formData.donorPhone,
-          amount: parseFloat(formData.amount),
-          payment_method: formData.paymentMethod,
-          is_anonymous: formData.isAnonymous,
-          message: formData.message || null,
-          status: formData.status
-        })
+        .insert(donationData)
         .select();
 
       if (error) {

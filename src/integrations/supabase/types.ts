@@ -90,7 +90,7 @@ export type Database = {
           created_at: string
           currency: string
           donor_email: string | null
-          donor_name: string
+          donor_name: string | null
           donor_phone: string | null
           id: string
           is_anonymous: boolean
@@ -104,7 +104,7 @@ export type Database = {
           created_at?: string
           currency?: string
           donor_email?: string | null
-          donor_name: string
+          donor_name?: string | null
           donor_phone?: string | null
           id?: string
           is_anonymous?: boolean
@@ -118,7 +118,7 @@ export type Database = {
           created_at?: string
           currency?: string
           donor_email?: string | null
-          donor_name?: string
+          donor_name?: string | null
           donor_phone?: string | null
           id?: string
           is_anonymous?: boolean
