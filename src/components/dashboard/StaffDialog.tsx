@@ -10,6 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import PhotoUpload from "@/components/ui/photo-upload";
 
 interface StaffDialogProps {
   open: boolean;
@@ -106,6 +107,10 @@ const StaffDialog = ({ open, onOpenChange, staff }: StaffDialogProps) => {
     saveMutation.mutate(formData);
   };
 
+  const handlePhotoChange = (photoUrl: string) => {
+    setFormData({ ...formData, photo: photoUrl });
+  };
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
@@ -138,7 +143,6 @@ const StaffDialog = ({ open, onOpenChange, staff }: StaffDialogProps) => {
                 <SelectItem value="entraineur">Entraîneur</SelectItem>
                 <SelectItem value="administration">Administration</SelectItem>                
                 <SelectItem value="manager">Manager</SelectItem>
-               
               </SelectContent>
             </Select>
           </div>
@@ -173,15 +177,12 @@ const StaffDialog = ({ open, onOpenChange, staff }: StaffDialogProps) => {
             />
           </div>
 
-          <div>
-            <Label htmlFor="photo">Photo (URL)</Label>
-            <Input
-              id="photo"
-              value={formData.photo}
-              onChange={(e) => setFormData({ ...formData, photo: e.target.value })}
-              placeholder="URL de la photo"
-            />
-          </div>
+          <PhotoUpload
+            currentPhoto={formData.photo}
+            onPhotoChange={handlePhotoChange}
+            label="Photo du membre"
+            folder="staff"
+          />
 
           <div>
             <Label htmlFor="bio">Biographie</Label>

@@ -8,6 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import PhotoUpload from "@/components/ui/photo-upload";
 
 interface GalleryDialogProps {
   open: boolean;
@@ -88,6 +89,10 @@ const GalleryDialog = ({ open, onOpenChange, gallery }: GalleryDialogProps) => {
     saveMutation.mutate(formData);
   };
 
+  const handleCoverImageChange = (photoUrl: string) => {
+    setFormData({ ...formData, cover_image: photoUrl });
+  };
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl">
@@ -131,15 +136,12 @@ const GalleryDialog = ({ open, onOpenChange, gallery }: GalleryDialogProps) => {
             />
           </div>
 
-          <div>
-            <Label htmlFor="cover_image">Image de couverture (URL)</Label>
-            <Input
-              id="cover_image"
-              value={formData.cover_image}
-              onChange={(e) => setFormData({ ...formData, cover_image: e.target.value })}
-              placeholder="URL de l'image de couverture"
-            />
-          </div>
+          <PhotoUpload
+            currentPhoto={formData.cover_image}
+            onPhotoChange={handleCoverImageChange}
+            label="Image de couverture"
+            folder="galleries"
+          />
 
           <div className="flex gap-2 pt-4">
             <Button type="submit" disabled={saveMutation.isPending} className="bg-green-600 hover:bg-green-700">

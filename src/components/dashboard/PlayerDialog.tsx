@@ -10,6 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import PhotoUpload from "@/components/ui/photo-upload";
 
 interface PlayerDialogProps {
   open: boolean;
@@ -114,6 +115,10 @@ const PlayerDialog = ({ open, onOpenChange, player }: PlayerDialogProps) => {
     saveMutation.mutate(formData);
   };
 
+  const handlePhotoChange = (photoUrl: string) => {
+    setFormData({ ...formData, photo: photoUrl });
+  };
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
@@ -201,15 +206,12 @@ const PlayerDialog = ({ open, onOpenChange, player }: PlayerDialogProps) => {
             />
           </div>
 
-          <div>
-            <Label htmlFor="photo">Photo (URL)</Label>
-            <Input
-              id="photo"
-              value={formData.photo}
-              onChange={(e) => setFormData({ ...formData, photo: e.target.value })}
-              placeholder="URL de la photo du joueur"
-            />
-          </div>
+          <PhotoUpload
+            currentPhoto={formData.photo}
+            onPhotoChange={handlePhotoChange}
+            label="Photo du joueur"
+            folder="players"
+          />
 
           <div>
             <Label htmlFor="bio">Biographie</Label>
