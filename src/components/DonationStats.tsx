@@ -1,4 +1,3 @@
-
 import { useQuery } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 import { supabase } from "@/integrations/supabase/client";
@@ -183,7 +182,7 @@ const DonationStats = () => {
                     cy="50%"
                     outerRadius={80}
                     dataKey="amount"
-                    label={({ method, amount }) => `${method}: ${amount.toFixed(2)} DT`}
+                    label={({ method, amount }) => `${method}: ${Number(amount).toFixed(2)} DT`}
                   >
                     {paymentMethodData.map((entry, index) => (
                       <Cell key={`cell-${index}`} fill={entry.color} />
@@ -192,9 +191,10 @@ const DonationStats = () => {
                   <ChartTooltip 
                     content={({ active, payload }) => {
                       if (active && payload && payload.length) {
+                        const value = Number(payload[0].value);
                         return (
                           <div className="bg-white p-2 border rounded shadow">
-                            <p>{`${payload[0].payload.method}: ${payload[0].value.toFixed(2)} DT`}</p>
+                            <p>{`${payload[0].payload.method}: ${value.toFixed(2)} DT`}</p>
                           </div>
                         );
                       }
