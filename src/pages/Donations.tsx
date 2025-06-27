@@ -188,9 +188,9 @@ const Donations = () => {
                 </p>
                 <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
                   <div className="space-y-2">
-                    <p className="font-medium text-blue-900">📧 Email : contact@escchebba.tn</p>
+                    <p className="font-medium text-blue-900">📧 Email : contact@escchorbane.tn</p>
                     <p className="font-medium text-blue-900">📞 Téléphone : +216 XX XXX XXX</p>
-                    <p className="font-medium text-blue-900">📍 Adresse : Chebba, Mahdia</p>
+                    <p className="font-medium text-blue-900">📍 Adresse : Chorbanne, Mahdia</p>
                   </div>
                 </div>
                 <p className="text-sm text-gray-600">
