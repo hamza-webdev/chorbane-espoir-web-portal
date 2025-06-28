@@ -5,7 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Edit, Trash2 } from "lucide-react";
+import { Plus, Edit, Trash2, Trophy } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import CompetitionDialog from "./CompetitionDialog";
 
@@ -80,76 +80,111 @@ const CompetitionsManager = () => {
   };
 
   if (isLoading) {
-    return <div className="flex justify-center p-8">Chargement...</div>;
+    return (
+      <div className="flex justify-center items-center py-12">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600 mx-auto mb-2"></div>
+          <p className="text-gray-600">Chargement...</p>
+        </div>
+      </div>
+    );
   }
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
-        <div>
-          <h2 className="text-xl sm:text-2xl font-bold text-gray-900">Gestion des Compétitions</h2>
-          <p className="text-sm sm:text-base text-gray-600">Organisez les compétitions et tournois</p>
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4">
+        <div className="space-y-1">
+          <h2 className="text-2xl sm:text-3xl font-bold text-gray-900">
+            Gestion des Compétitions
+          </h2>
+          <p className="text-base text-gray-600">
+            Organisez les compétitions et tournois
+          </p>
         </div>
-        <Button onClick={() => setDialogOpen(true)} className="bg-green-600 hover:bg-green-700 w-full sm:w-auto">
-          <Plus size={16} className="mr-2" />
+        <Button 
+          onClick={() => setDialogOpen(true)} 
+          className="bg-green-600 hover:bg-green-700 w-full sm:w-auto text-base px-6 py-2"
+        >
+          <Plus size={18} className="mr-2" />
           Nouvelle Compétition
         </Button>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6">
+      {/* Grid des compétitions */}
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 lg:gap-6">
         {competitions?.map((competition) => (
-          <Card key={competition.id} className="hover:shadow-lg transition-shadow">
-            <CardHeader className="p-4">
-              <div className="flex items-start justify-between">
-                <div className="flex-1 min-w-0">
-                  <CardTitle className="text-sm sm:text-lg truncate">
+          <Card key={competition.id} className="hover:shadow-lg transition-all duration-200 border-l-4 border-l-green-600">
+            <CardHeader className="p-4 lg:p-6">
+              <div className="flex items-start justify-between gap-3">
+                <div className="flex-1 min-w-0 space-y-2">
+                  <CardTitle className="text-lg lg:text-xl leading-tight line-clamp-2">
                     {competition.name}
                   </CardTitle>
-                  <CardDescription className="flex flex-col sm:flex-row sm:items-center gap-2 mt-2">
-                    <Badge className="bg-green-600 text-xs w-fit">
-                      {getTypeLabel(competition.type)}
-                    </Badge>
-                    {!competition.active && (
-                      <Badge variant="secondary" className="text-xs w-fit">Inactive</Badge>
-                    )}
+                  <CardDescription className="flex flex-col gap-2">
+                    <div className="flex flex-wrap gap-2">
+                      <Badge className="bg-green-600 text-white text-xs">
+                        {getTypeLabel(competition.type)}
+                      </Badge>
+                      {!competition.active && (
+                        <Badge variant="secondary" className="text-xs">
+                          Inactive
+                        </Badge>
+                      )}
+                    </div>
                   </CardDescription>
                 </div>
               </div>
             </CardHeader>
-            <CardContent className="p-4 pt-0">
-              <div className="space-y-1 text-xs sm:text-sm text-gray-600 mb-4">
+            
+            <CardContent className="p-4 lg:p-6 pt-0">
+              {/* Informations de la compétition */}
+              <div className="space-y-2 text-sm text-gray-600 mb-4">
                 {competition.season && (
-                  <p><strong>Saison:</strong> {competition.season}</p>
+                  <div className="flex justify-between">
+                    <span className="font-medium">Saison:</span>
+                    <span>{competition.season}</span>
+                  </div>
                 )}
                 {competition.start_date && (
-                  <p><strong>Début:</strong> {new Date(competition.start_date).toLocaleDateString('fr-FR')}</p>
+                  <div className="flex justify-between">
+                    <span className="font-medium">Début:</span>
+                    <span>{new Date(competition.start_date).toLocaleDateString('fr-FR')}</span>
+                  </div>
                 )}
                 {competition.end_date && (
-                  <p><strong>Fin:</strong> {new Date(competition.end_date).toLocaleDateString('fr-FR')}</p>
+                  <div className="flex justify-between">
+                    <span className="font-medium">Fin:</span>
+                    <span>{new Date(competition.end_date).toLocaleDateString('fr-FR')}</span>
+                  </div>
                 )}
               </div>
+              
+              {/* Description */}
               {competition.description && (
-                <p className="text-gray-600 text-xs sm:text-sm line-clamp-2 mb-4">
+                <p className="text-gray-600 text-sm line-clamp-3 mb-4 leading-relaxed">
                   {competition.description}
                 </p>
               )}
+              
+              {/* Actions */}
               <div className="flex flex-col sm:flex-row gap-2">
                 <Button
                   variant="outline"
                   size="sm"
                   onClick={() => handleEdit(competition)}
-                  className="text-xs sm:text-sm"
+                  className="flex-1 text-sm"
                 >
-                  <Edit size={12} className="mr-1" />
+                  <Edit size={14} className="mr-2" />
                   Modifier
                 </Button>
                 <Button
                   variant="outline"
                   size="sm"
                   onClick={() => handleDelete(competition.id)}
-                  className="text-red-600 hover:text-red-700 text-xs sm:text-sm"
+                  className="flex-1 text-red-600 hover:text-red-700 hover:bg-red-50 text-sm"
                 >
-                  <Trash2 size={12} className="mr-1" />
+                  <Trash2 size={14} className="mr-2" />
                   Supprimer
                 </Button>
               </div>
@@ -157,6 +192,23 @@ const CompetitionsManager = () => {
           </Card>
         ))}
       </div>
+
+      {/* Message si aucune compétition */}
+      {competitions?.length === 0 && (
+        <div className="text-center py-12 bg-gray-50 rounded-lg border-2 border-dashed border-gray-300">
+          <Trophy className="h-16 w-16 text-gray-400 mx-auto mb-4" />
+          <h3 className="text-lg font-medium text-gray-900 mb-2">
+            Aucune compétition
+          </h3>
+          <p className="text-gray-600 mb-4">
+            Commencez par créer votre première compétition.
+          </p>
+          <Button onClick={() => setDialogOpen(true)} className="bg-green-600 hover:bg-green-700">
+            <Plus size={16} className="mr-2" />
+            Créer une compétition
+          </Button>
+        </div>
+      )}
 
       <CompetitionDialog
         open={dialogOpen}

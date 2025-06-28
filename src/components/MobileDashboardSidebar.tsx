@@ -28,32 +28,41 @@ const MobileDashboardSidebar = ({ activeTab, onTabChange }: MobileDashboardSideb
     setIsOpen(false);
   };
 
+  const activeTabLabel = tabs.find(tab => tab.id === activeTab)?.label || 'Menu';
+
   return (
-    <div className="md:hidden">
+    <div className="lg:hidden">
       <Sheet open={isOpen} onOpenChange={setIsOpen}>
         <SheetTrigger asChild>
-          <Button variant="outline" size="sm" className="mb-4">
+          <Button variant="outline" className="mb-4 w-full sm:w-auto">
             <Menu size={16} className="mr-2" />
-            Menu
+            <span className="font-medium">{activeTabLabel}</span>
           </Button>
         </SheetTrigger>
-        <SheetContent side="left" className="w-72">
-          <SheetHeader>
-            <SheetTitle>Menu Dashboard</SheetTitle>
+        <SheetContent side="left" className="w-80 sm:w-96">
+          <SheetHeader className="pb-6">
+            <SheetTitle className="text-left text-lg font-bold text-green-800">
+              Menu Dashboard
+            </SheetTitle>
           </SheetHeader>
-          <nav className="mt-6">
+          <nav className="h-full overflow-y-auto">
             <div className="space-y-2">
               {tabs.map((tab) => {
                 const Icon = tab.icon;
+                const isActive = activeTab === tab.id;
                 return (
                   <Button
                     key={tab.id}
-                    variant={activeTab === tab.id ? "default" : "ghost"}
-                    className="w-full justify-start"
+                    variant={isActive ? "default" : "ghost"}
+                    className={`w-full justify-start h-12 text-base font-medium ${
+                      isActive 
+                        ? "bg-green-600 hover:bg-green-700 text-white" 
+                        : "hover:bg-green-50 hover:text-green-700"
+                    }`}
                     onClick={() => handleTabClick(tab.id)}
                   >
-                    <Icon size={16} className="mr-3" />
-                    {tab.label}
+                    <Icon size={18} className="mr-3 flex-shrink-0" />
+                    <span className="truncate">{tab.label}</span>
                   </Button>
                 );
               })}

@@ -17,91 +17,79 @@ import ProtectedRoute from "@/components/ProtectedRoute";
 const Dashboard = () => {
   const [activeTab, setActiveTab] = useState("articles");
 
+  const tabs = [
+    { id: "articles", label: "Articles", icon: FileText, shortLabel: "Art." },
+    { id: "players", label: "Joueurs", icon: Users, shortLabel: "Joueurs" },
+    { id: "staff", label: "Staff", icon: UserCheck, shortLabel: "Staff" },
+    { id: "matches", label: "Matchs", icon: Calendar, shortLabel: "Match" },
+    { id: "competitions", label: "Compétitions", icon: Trophy, shortLabel: "Comp." },
+    { id: "galleries", label: "Galeries", icon: Camera, shortLabel: "Gal." },
+    { id: "donations", label: "Donations", icon: Heart, shortLabel: "Don." },
+    { id: "subscriptions", label: "Abonnements", icon: CreditCard, shortLabel: "Abo." },
+  ];
+
   return (
     <ProtectedRoute>
       <div className="min-h-screen bg-gray-50">
         <DashboardHeader />
 
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-8">
+        <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-8 py-4 sm:py-6 lg:py-8">
           <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4 sm:space-y-6">
             {/* Mobile Sidebar */}
             <MobileDashboardSidebar activeTab={activeTab} onTabChange={setActiveTab} />
 
             {/* Desktop Tabs */}
-            <TabsList className="hidden md:grid w-full grid-cols-4 md:grid-cols-8 lg:grid-cols-8 h-auto">
-              <TabsTrigger value="articles" className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm p-2 sm:p-3">
-                <FileText size={14} className="sm:size-4" />
-                <span className="hidden sm:inline">Articles</span>
-                <span className="sm:hidden">Art.</span>
-              </TabsTrigger>
-              <TabsTrigger value="players" className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm p-2 sm:p-3">
-                <Users size={14} className="sm:size-4" />
-                <span className="hidden sm:inline">Joueurs</span>
-                <span className="sm:hidden">Joueurs</span>
-              </TabsTrigger>
-              <TabsTrigger value="staff" className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm p-2 sm:p-3">
-                <UserCheck size={14} className="sm:size-4" />
-                <span className="hidden sm:inline">Staff</span>
-                <span className="sm:hidden">Staff</span>
-              </TabsTrigger>
-              <TabsTrigger value="matches" className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm p-2 sm:p-3">
-                <Calendar size={14} className="sm:size-4" />
-                <span className="hidden sm:inline">Matchs</span>
-                <span className="sm:hidden">Match</span>
-              </TabsTrigger>
-              <TabsTrigger value="competitions" className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm p-2 sm:p-3">
-                <Trophy size={14} className="sm:size-4" />
-                <span className="hidden sm:inline">Compétitions</span>
-                <span className="sm:hidden">Comp.</span>
-              </TabsTrigger>
-              <TabsTrigger value="galleries" className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm p-2 sm:p-3">
-                <Camera size={14} className="sm:size-4" />
-                <span className="hidden sm:inline">Galeries</span>
-                <span className="sm:hidden">Gal.</span>
-              </TabsTrigger>
-              <TabsTrigger value="donations" className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm p-2 sm:p-3">
-                <Heart size={14} className="sm:size-4" />
-                <span className="hidden sm:inline">Donations</span>
-                <span className="sm:hidden">Don.</span>
-              </TabsTrigger>
-              <TabsTrigger value="subscriptions" className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm p-2 sm:p-3">
-                <CreditCard size={14} className="sm:size-4" />
-                <span className="hidden sm:inline">Abonnements</span>
-                <span className="sm:hidden">Abo.</span>
-              </TabsTrigger>
+            <TabsList className="hidden lg:grid w-full grid-cols-8 h-auto bg-white border">
+              {tabs.map((tab) => {
+                const Icon = tab.icon;
+                return (
+                  <TabsTrigger 
+                    key={tab.id}
+                    value={tab.id} 
+                    className="flex items-center gap-2 text-sm lg:text-base p-3 lg:p-4 data-[state=active]:bg-green-600 data-[state=active]:text-white"
+                  >
+                    <Icon size={16} />
+                    <span className="hidden xl:inline">{tab.label}</span>
+                    <span className="xl:hidden">{tab.shortLabel}</span>
+                  </TabsTrigger>
+                );
+              })}
             </TabsList>
 
-            <TabsContent value="articles">
-              <ArticlesManager />
-            </TabsContent>
+            {/* Tab Contents */}
+            <div className="bg-white rounded-lg shadow-sm border min-h-[600px]">
+              <TabsContent value="articles" className="m-0 p-4 sm:p-6">
+                <ArticlesManager />
+              </TabsContent>
 
-            <TabsContent value="players">
-              <PlayersManager />
-            </TabsContent>
+              <TabsContent value="players" className="m-0 p-4 sm:p-6">
+                <PlayersManager />
+              </TabsContent>
 
-            <TabsContent value="staff">
-              <StaffManager />
-            </TabsContent>
+              <TabsContent value="staff" className="m-0 p-4 sm:p-6">
+                <StaffManager />
+              </TabsContent>
 
-            <TabsContent value="matches">
-              <MatchesManager />
-            </TabsContent>
+              <TabsContent value="matches" className="m-0 p-4 sm:p-6">
+                <MatchesManager />
+              </TabsContent>
 
-            <TabsContent value="competitions">
-              <CompetitionsManager />
-            </TabsContent>
+              <TabsContent value="competitions" className="m-0 p-4 sm:p-6">
+                <CompetitionsManager />
+              </TabsContent>
 
-            <TabsContent value="galleries">
-              <GalleriesManager />
-            </TabsContent>
+              <TabsContent value="galleries" className="m-0 p-4 sm:p-6">
+                <GalleriesManager />
+              </TabsContent>
 
-            <TabsContent value="donations">
-              <DonationsManager />
-            </TabsContent>
+              <TabsContent value="donations" className="m-0 p-4 sm:p-6">
+                <DonationsManager />
+              </TabsContent>
 
-            <TabsContent value="subscriptions">
-              <SubscriptionsManager />
-            </TabsContent>
+              <TabsContent value="subscriptions" className="m-0 p-4 sm:p-6">
+                <SubscriptionsManager />
+              </TabsContent>
+            </div>
           </Tabs>
         </div>
       </div>
