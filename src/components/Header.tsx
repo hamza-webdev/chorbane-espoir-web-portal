@@ -15,11 +15,11 @@ const Header = () => {
 
   const navigation = [
     { name: t('header.home'), href: "#accueil" },
+    { name: t('header.news'), href: "#actualites" },
     { name: t('header.team'), href: "#equipe" },
     { name: t('header.matches'), href: "#matchs" },
-    { name: t('header.news'), href: "#actualites" },
     { name: t('header.galleries'), href: "#galeries" },
-    { name: t('donations.title'), href: "#donations" },
+    { name: "Soutenez le club", href: "#donations" },
     { name: t('header.contact'), href: "#contact" }
   ];
 
