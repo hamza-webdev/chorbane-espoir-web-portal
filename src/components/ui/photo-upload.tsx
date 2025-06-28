@@ -35,11 +35,11 @@ const PhotoUpload = ({ currentPhoto, onPhotoChange, label, folder = "general" }:
       return;
     }
 
-    // Validate file size (10MB instead of 5MB for better mobile compatibility)
-    if (file.size > 10 * 1024 * 1024) {
+    // Validate file size (22MB)
+    if (file.size > 22 * 1024 * 1024) {
       toast({
         title: "Erreur",
-        description: "La taille du fichier ne doit pas dépasser 10MB.",
+        description: "La taille du fichier ne doit pas dépasser 22MB.",
         variant: "destructive",
       });
       return;
@@ -68,7 +68,7 @@ const PhotoUpload = ({ currentPhoto, onPhotoChange, label, folder = "general" }:
         console.log('Creating uploads bucket...');
         const { error: createBucketError } = await supabase.storage.createBucket('uploads', {
           public: true,
-          fileSizeLimit: 10485760, // 10MB
+          fileSizeLimit: 23068672, // 22MB
           allowedMimeTypes: ['image/jpeg', 'image/png', 'image/webp', 'image/gif', 'image/jpg']
         });
         
@@ -150,7 +150,7 @@ const PhotoUpload = ({ currentPhoto, onPhotoChange, label, folder = "general" }:
             className="cursor-pointer file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-green-50 file:text-green-700 hover:file:bg-green-100"
           />
           <p className="text-xs text-gray-500 mt-1">
-            Formats supportés: JPG, PNG, WebP, GIF (max 10MB)
+            Formats supportés: JPG, PNG, WebP, GIF (max 22MB)
           </p>
         </div>
 
