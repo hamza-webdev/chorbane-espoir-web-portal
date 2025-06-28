@@ -23,6 +23,8 @@ const PhotoUpload = ({ currentPhoto, onPhotoChange, label, folder = "general" }:
     const file = event.target.files?.[0];
     if (!file) return;
 
+    console.log('File selected:', file.name, file.size, file.type);
+
     // Validate file type
     if (!file.type.startsWith('image/')) {
       toast({
@@ -33,11 +35,11 @@ const PhotoUpload = ({ currentPhoto, onPhotoChange, label, folder = "general" }:
       return;
     }
 
-    // Validate file size (5MB)
-    if (file.size > 5 * 1024 * 1024) {
+    // Validate file size (10MB instead of 5MB for better mobile compatibility)
+    if (file.size > 10 * 1024 * 1024) {
       toast({
         title: "Erreur",
-        description: "La taille du fichier ne doit pas dépasser 5MB.",
+        description: "La taille du fichier ne doit pas dépasser 10MB.",
         variant: "destructive",
       });
       return;
@@ -46,34 +48,78 @@ const PhotoUpload = ({ currentPhoto, onPhotoChange, label, folder = "general" }:
     setUploading(true);
 
     try {
-      // Create unique filename
-      const fileExt = file.name.split('.').pop();
-      const fileName = `${Math.random().toString(36).substring(2)}-${Date.now()}.${fileExt}`;
+      // Create unique filename with better mobile compatibility
+      const fileExt = file.name.split('.').pop()?.toLowerCase() || 'jpg';
+      const fileName = `${Date.now()}-${Math.random().toString(36).substring(2, 15)}.${fileExt}`;
       const filePath = `${folder}/${fileName}`;
 
-      // Upload file to Supabase storage
-      const { error: uploadError } = await supabase.storage
+      console.log('Uploading file to path:', filePath);
+
+      // Check if uploads bucket exists, if not create it
+      const { data: buckets, error: bucketsError } = await supabase.storage.listBuckets();
+      
+      if (bucketsError) {
+        console.error('Error listing buckets:', bucketsError);
+      }
+
+      const uploadsBucketExists = buckets?.some(bucket => bucket.id === 'uploads');
+      
+      if (!uploadsBucketExists) {
+        console.log('Creating uploads bucket...');
+        const { error: createBucketError } = await supabase.storage.createBucket('uploads', {
+          public: true,
+          fileSizeLimit: 10485760, // 10MB
+          allowedMimeTypes: ['image/jpeg', 'image/png', 'image/webp', 'image/gif', 'image/jpg']
+        });
+        
+        if (createBucketError) {
+          console.error('Error creating bucket:', createBucketError);
+          throw new Error('Impossible de créer l\'espace de stockage');
+        }
+      }
+
+      // Upload file to Supabase storage with better error handling
+      const { data: uploadData, error: uploadError } = await supabase.storage
         .from('uploads')
-        .upload(filePath, file);
+        .upload(filePath, file, {
+          cacheControl: '3600',
+          upsert: false
+        });
 
-      if (uploadError) throw uploadError;
+      if (uploadError) {
+        console.error('Upload error:', uploadError);
+        throw new Error(`Erreur de téléchargement: ${uploadError.message}`);
+      }
 
-      // Get public URL
-      const { data: { publicUrl } } = supabase.storage
+      console.log('File uploaded successfully:', uploadData);
+
+      // Get public URL with error handling
+      const { data: urlData } = supabase.storage
         .from('uploads')
         .getPublicUrl(filePath);
 
-      setPreview(publicUrl);
-      onPhotoChange(publicUrl);
+      if (!urlData?.publicUrl) {
+        throw new Error('Impossible d\'obtenir l\'URL publique du fichier');
+      }
+
+      console.log('Public URL obtained:', urlData.publicUrl);
+
+      setPreview(urlData.publicUrl);
+      onPhotoChange(urlData.publicUrl);
 
       toast({
         title: "Succès",
         description: "Photo téléchargée avec succès.",
       });
+
+      // Clear the input
+      event.target.value = '';
+
     } catch (error: any) {
+      console.error('Photo upload error:', error);
       toast({
         title: "Erreur",
-        description: "Erreur lors du téléchargement de la photo.",
+        description: error.message || "Erreur lors du téléchargement de la photo. Veuillez réessayer.",
         variant: "destructive",
       });
     } finally {
@@ -84,30 +130,44 @@ const PhotoUpload = ({ currentPhoto, onPhotoChange, label, folder = "general" }:
   const handleRemovePhoto = () => {
     setPreview(null);
     onPhotoChange('');
+    toast({
+      title: "Photo supprimée",
+      description: "La photo a été supprimée avec succès.",
+    });
   };
 
   return (
-    <div className="space-y-2">
-      <Label>{label}</Label>
-      <div className="flex items-start gap-4">
+    <div className="space-y-3">
+      <Label className="text-sm font-medium">{label}</Label>
+      <div className="flex flex-col gap-4">
+        {/* File Input */}
         <div className="flex-1">
           <Input
             type="file"
-            accept="image/*"
+            accept="image/*,image/heic,image/heif"
             onChange={handleFileUpload}
             disabled={uploading}
-            className="cursor-pointer"
+            className="cursor-pointer file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-green-50 file:text-green-700 hover:file:bg-green-100"
           />
+          <p className="text-xs text-gray-500 mt-1">
+            Formats supportés: JPG, PNG, WebP, GIF (max 10MB)
+          </p>
         </div>
+
+        {/* Preview */}
         {preview && (
-          <div className="relative">
-            <div className="w-20 h-20 rounded-lg overflow-hidden border">
+          <div className="relative inline-block">
+            <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-lg overflow-hidden border border-gray-200 shadow-sm">
               <img
                 src={preview}
-                alt="Preview"
+                alt="Aperçu"
                 className="w-full h-full object-cover"
                 onError={(e) => {
+                  console.error('Image load error for:', preview);
                   e.currentTarget.src = '/placeholder.svg';
+                }}
+                onLoad={() => {
+                  console.log('Image loaded successfully:', preview);
                 }}
               />
             </div>
@@ -115,20 +175,23 @@ const PhotoUpload = ({ currentPhoto, onPhotoChange, label, folder = "general" }:
               type="button"
               variant="destructive"
               size="sm"
-              className="absolute -top-2 -right-2 h-6 w-6 rounded-full p-0"
+              className="absolute -top-2 -right-2 h-7 w-7 rounded-full p-0 shadow-lg hover:shadow-xl transition-shadow"
               onClick={handleRemovePhoto}
+              disabled={uploading}
             >
-              <X size={12} />
+              <X size={14} />
             </Button>
           </div>
         )}
+
+        {/* Upload Status */}
+        {uploading && (
+          <div className="flex items-center gap-2 text-sm text-green-600 bg-green-50 p-3 rounded-lg">
+            <Upload size={16} className="animate-spin" />
+            <span>Téléchargement en cours...</span>
+          </div>
+        )}
       </div>
-      {uploading && (
-        <div className="flex items-center gap-2 text-sm text-gray-600">
-          <Upload size={16} className="animate-spin" />
-          Téléchargement en cours...
-        </div>
-      )}
     </div>
   );
 };
