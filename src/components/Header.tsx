@@ -52,7 +52,7 @@ const Header = () => {
         <div className="flex justify-between items-center h-16 sm:h-20">
           {/* Logo et titre */}
           <div className="flex items-center space-x-3 flex-shrink-0">
-            <div className="w-10 h-10 sm:w-12 sm:h-12 bg-green-600 rounded-full flex items-center justify-center">
+            <div className="w-10 h-10 sm:w-12 sm:h-12 bg-green-600 rounded-full flex items-center justify-center hover:animate-spin transition-all duration-500 cursor-pointer">
               <span className="text-white font-bold text-sm sm:text-lg">ESC</span>
             </div>
             <div>
