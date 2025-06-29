@@ -156,13 +156,4 @@ const DashboardHeader = () => {
   );
 };
 
-const goToHome = () => {
-  navigate("/");
-  setIsMenuOpen(false);
-};
-
-const toggleMenu = () => {
-  setIsMenuOpen(!isMenuOpen);
-};
-
 export default DashboardHeader;
