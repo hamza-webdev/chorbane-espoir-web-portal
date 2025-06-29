@@ -1,25 +1,35 @@
-name: Trigger Deployment on VPS
+name: 🚀 Deploy to O2Switch
 
 on:
   push:
     branches:
-      - main  # ou la branche de ton choix
+      - main
 
 jobs:
-  deploy:
+  build-and-deploy:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Trigger deploy script on VPS
-        uses: appleboy/ssh-action@v0.1.10
-        with:
-          host: 109.234.167.58
-          username: beha7263
-          key: ${{ secrets.key_o2switcher }}
-          port: 22
-          script: |
-            cd espoirsportifchorbane.com
-            git pull origin main
-            npm install
-            npm run build
-            sudo cp -r dist/* .
+    - name: 📦 Checkout repository
+      uses: actions/checkout@v3
+
+    - name: 🧰 Set up Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '18'
+
+    - name: 📥 Install dependencies
+      run: npm install
+
+    - name: 🔨 Build project
+      run: npm run build
+
+    - name: 📤 Deploy to O2Switch via SCP
+      uses: appleboy/scp-action@v0.1.7
+      with:
+        host: 109.234.167.58
+        username: beha7263
+        key: ${{ secrets.key_o2switcher }}
+        port: 22
+        source: "dist/*"
+        target: "/home/beha7263/espoirsportifchorbane.com"
