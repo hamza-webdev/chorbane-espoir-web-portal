@@ -3,15 +3,17 @@ import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Menu, X, LogIn, Heart } from "lucide-react";
+import { Menu, X, LogIn } from "lucide-react";
 import LanguageSelector from "./LanguageSelector";
 import { useAuth } from "@/hooks/useAuth";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const { t } = useTranslation();
   const { isAuthenticated } = useAuth();
   const navigate = useNavigate();
+  const isMobile = useIsMobile();
 
   const navigation = [
     { name: t('header.home'), href: "#accueil" },
@@ -33,6 +35,7 @@ const Header = () => {
     } else {
       navigate('/auth');
     }
+    setIsMenuOpen(false);
   };
 
   const scrollToSection = (href: string) => {
@@ -44,51 +47,53 @@ const Header = () => {
   };
 
   return (
-    <header className="bg-white shadow-lg border-b-4 border-green-600 relative sticky top-0 z-40">
-      <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-8">
-        <div className="flex justify-between items-center py-3 sm:py-4 lg:py-6">
+    <header className="bg-white shadow-lg border-b-4 border-green-600 sticky top-0 z-50">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex justify-between items-center h-16 sm:h-20">
           {/* Logo et titre */}
-          <div className="flex items-center space-x-2 sm:space-x-4 flex-shrink-0">
+          <div className="flex items-center space-x-3 flex-shrink-0">
             <div className="w-10 h-10 sm:w-12 sm:h-12 bg-green-600 rounded-full flex items-center justify-center">
-              <span className="text-white font-bold text-lg sm:text-xl">ESC</span>
+              <span className="text-white font-bold text-sm sm:text-lg">ESC</span>
             </div>
-            <div className="min-w-0">
-              <h1 className="text-lg sm:text-xl lg:text-2xl font-bold text-green-800 truncate">
+            <div>
+              <h1 className="text-lg sm:text-xl lg:text-2xl font-bold text-green-800">
                 Espoir Sportif
               </h1>
-              <p className="text-xs sm:text-sm text-green-600 hidden xs:block">
+              <p className="text-xs sm:text-sm text-green-600 hidden sm:block">
                 de Chorbane
               </p>
             </div>
           </div>
 
-          {/* Desktop Navigation */}
-          <nav className="hidden xl:flex items-center space-x-4 2xl:space-x-6">
+          {/* Desktop Navigation - Hidden on mobile and tablet */}
+          <nav className="hidden lg:flex items-center space-x-1 xl:space-x-4">
             {navigation.map((item) => (
               <button
                 key={item.name}
                 onClick={() => scrollToSection(item.href)}
-                className="text-gray-700 hover:text-green-600 font-medium transition-colors duration-200 text-sm lg:text-base whitespace-nowrap"
+                className="text-gray-700 hover:text-green-600 font-medium transition-colors duration-200 px-2 py-2 rounded-md text-sm xl:text-base whitespace-nowrap hover:bg-green-50"
               >
                 {item.name}
               </button>
             ))}
-            <div className="flex items-center space-x-2">
-              <LanguageSelector />
-              <Button 
-                variant="outline" 
-                onClick={handleDashboardClick} 
-                className="flex items-center gap-2 text-sm"
-                size="sm"
-              >
-                <LogIn size={14} />
-                <span className="hidden lg:inline">{t('common.dashboard')}</span>
-              </Button>
-            </div>
           </nav>
 
-          {/* Mobile Controls */}
-          <div className="xl:hidden flex items-center gap-2">
+          {/* Desktop Actions - Hidden on mobile */}
+          <div className="hidden lg:flex items-center space-x-3">
+            <LanguageSelector />
+            <Button 
+              variant="outline" 
+              onClick={handleDashboardClick} 
+              className="flex items-center gap-2 text-sm"
+              size="sm"
+            >
+              <LogIn size={16} />
+              <span>{t('common.dashboard')}</span>
+            </Button>
+          </div>
+
+          {/* Mobile Controls - Visible on mobile and tablet */}
+          <div className="flex lg:hidden items-center gap-2">
             <LanguageSelector />
             <Button
               variant="ghost"
@@ -103,34 +108,33 @@ const Header = () => {
         </div>
       </div>
 
-      {/* Mobile Navigation Overlay */}
+      {/* Mobile Navigation Menu */}
       {isMenuOpen && (
         <>
           {/* Backdrop */}
           <div 
-            className="fixed inset-0 bg-black bg-opacity-50 z-40 xl:hidden"
+            className="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden"
             onClick={toggleMenu}
           />
           
-          {/* Mobile Menu */}
-          <div className="absolute top-full left-0 right-0 bg-white shadow-xl z-50 xl:hidden border-t">
-            <nav className="px-4 py-4 max-h-[calc(100vh-120px)] overflow-y-auto">
-              <div className="flex flex-col space-y-1">
+          {/* Mobile Menu Panel */}
+          <div className="absolute top-full left-0 right-0 bg-white shadow-xl z-50 lg:hidden border-t">
+            <nav className="px-4 py-4 max-h-[calc(100vh-80px)] overflow-y-auto">
+              <div className="space-y-1">
                 {navigation.map((item) => (
                   <button
                     key={item.name}
                     onClick={() => scrollToSection(item.href)}
-                    className="text-gray-700 hover:text-green-600 hover:bg-green-50 font-medium transition-all duration-200 py-3 px-3 rounded-lg text-left text-base"
+                    className="w-full text-left text-gray-700 hover:text-green-600 hover:bg-green-50 font-medium transition-all duration-200 py-3 px-3 rounded-lg text-base"
                   >
                     {item.name}
                   </button>
                 ))}
-                <div className="pt-3 mt-3 border-t border-gray-200">
+                
+                {/* Dashboard Button in Mobile Menu */}
+                <div className="pt-4 mt-4 border-t border-gray-200">
                   <Button
-                    onClick={() => {
-                      handleDashboardClick();
-                      toggleMenu();
-                    }}
+                    onClick={handleDashboardClick}
                     variant="outline"
                     className="w-full flex items-center justify-center gap-2"
                   >
