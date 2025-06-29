@@ -27,7 +27,7 @@ jobs:
     - name: 📤 Deploy to O2Switch via SCP
       uses: appleboy/scp-action@v0.1.7
       with:
-        host: 109.234.167.58
+        host: 147.93.53.24
         username: root
         key: ${{ secrets.HOSTINGER_SSH_KEY }}
         port: 22
