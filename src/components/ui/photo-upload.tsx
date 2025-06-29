@@ -55,30 +55,7 @@ const PhotoUpload = ({ currentPhoto, onPhotoChange, label, folder = "general" }:
 
       console.log('Uploading file to path:', filePath);
 
-      // Check if uploads bucket exists, if not create it
-      const { data: buckets, error: bucketsError } = await supabase.storage.listBuckets();
-      
-      if (bucketsError) {
-        console.error('Error listing buckets:', bucketsError);
-      }
-
-      const uploadsBucketExists = buckets?.some(bucket => bucket.id === 'uploads');
-      
-      if (!uploadsBucketExists) {
-        console.log('Creating uploads bucket...');
-        const { error: createBucketError } = await supabase.storage.createBucket('uploads', {
-          public: true,
-          fileSizeLimit: 23068672, // 22MB
-          allowedMimeTypes: ['image/jpeg', 'image/png', 'image/webp', 'image/gif', 'image/jpg']
-        });
-        
-        if (createBucketError) {
-          console.error('Error creating bucket:', createBucketError);
-          throw new Error('Impossible de créer l\'espace de stockage');
-        }
-      }
-
-      // Upload file to Supabase storage with better error handling
+      // Upload file to Supabase storage directly
       const { data: uploadData, error: uploadError } = await supabase.storage
         .from('uploads')
         .upload(filePath, file, {
@@ -93,7 +70,7 @@ const PhotoUpload = ({ currentPhoto, onPhotoChange, label, folder = "general" }:
 
       console.log('File uploaded successfully:', uploadData);
 
-      // Get public URL with error handling
+      // Get public URL
       const { data: urlData } = supabase.storage
         .from('uploads')
         .getPublicUrl(filePath);
