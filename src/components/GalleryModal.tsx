@@ -51,54 +51,54 @@ const GalleryModal = ({ gallery, open, onOpenChange }: GalleryModalProps) => {
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent className="max-w-4xl w-full h-[80vh] p-0">
-        <DialogHeader className="p-6 pb-0">
-          <DialogTitle className="text-2xl font-bold">{gallery.title}</DialogTitle>
+      <DialogContent className="max-w-[95vw] sm:max-w-4xl w-full h-[90vh] sm:h-[80vh] p-0 gap-0">
+        <DialogHeader className="p-4 sm:p-6 pb-2 sm:pb-0 border-b sm:border-b-0">
+          <DialogTitle className="text-lg sm:text-2xl font-bold pr-8">{gallery.title}</DialogTitle>
           {gallery.description && (
-            <p className="text-gray-600 mt-2">{gallery.description}</p>
+            <p className="text-gray-600 mt-1 sm:mt-2 text-sm sm:text-base">{gallery.description}</p>
           )}
           {gallery.event_date && (
-            <p className="text-sm text-gray-500">
+            <p className="text-xs sm:text-sm text-gray-500 mt-1">
               {format(new Date(gallery.event_date), 'dd MMMM yyyy', { locale: fr })}
             </p>
           )}
         </DialogHeader>
 
         {photos.length > 0 ? (
-          <div className="flex-1 flex flex-col">
+          <div className="flex-1 flex flex-col min-h-0">
             {/* Photo principale */}
-            <div className="flex-1 relative bg-black flex items-center justify-center">
+            <div className="flex-1 relative bg-black flex items-center justify-center min-h-0">
               <img
                 src={currentPhoto.image_url}
                 alt={currentPhoto.caption || gallery.title}
                 className="max-w-full max-h-full object-contain"
               />
               
-              {/* Boutons de navigation */}
+              {/* Boutons de navigation - Plus grands sur mobile */}
               {photos.length > 1 && (
                 <>
                   <Button
                     variant="outline"
                     size="icon"
-                    className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white"
+                    className="absolute left-2 sm:left-4 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white w-10 h-10 sm:w-8 sm:h-8"
                     onClick={prevPhoto}
                   >
-                    <ChevronLeft className="h-4 w-4" />
+                    <ChevronLeft className="h-5 w-5 sm:h-4 sm:w-4" />
                   </Button>
                   <Button
                     variant="outline"
                     size="icon"
-                    className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white"
+                    className="absolute right-2 sm:right-4 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white w-10 h-10 sm:w-8 sm:h-8"
                     onClick={nextPhoto}
                   >
-                    <ChevronRight className="h-4 w-4" />
+                    <ChevronRight className="h-5 w-5 sm:h-4 sm:w-4" />
                   </Button>
                 </>
               )}
 
               {/* Indicateur de photo */}
               {photos.length > 1 && (
-                <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-black/50 text-white px-3 py-1 rounded-full text-sm">
+                <div className="absolute bottom-2 sm:bottom-4 left-1/2 -translate-x-1/2 bg-black/60 text-white px-2 sm:px-3 py-1 rounded-full text-xs sm:text-sm">
                   {currentPhotoIndex + 1} / {photos.length}
                 </div>
               )}
@@ -106,20 +106,20 @@ const GalleryModal = ({ gallery, open, onOpenChange }: GalleryModalProps) => {
 
             {/* Caption */}
             {currentPhoto.caption && (
-              <div className="p-4 bg-gray-50 border-t">
-                <p className="text-gray-700">{currentPhoto.caption}</p>
+              <div className="p-3 sm:p-4 bg-gray-50 border-t">
+                <p className="text-gray-700 text-sm sm:text-base">{currentPhoto.caption}</p>
               </div>
             )}
 
-            {/* Miniatures */}
+            {/* Miniatures - Masquées sur très petit écran */}
             {photos.length > 1 && (
-              <div className="p-4 border-t">
-                <div className="flex gap-2 overflow-x-auto">
+              <div className="p-2 sm:p-4 border-t hidden xs:block">
+                <div className="flex gap-1 sm:gap-2 overflow-x-auto pb-2 sm:pb-0">
                   {photos.map((photo, index) => (
                     <button
                       key={photo.id}
                       onClick={() => setCurrentPhotoIndex(index)}
-                      className={`flex-shrink-0 w-16 h-16 rounded-md overflow-hidden border-2 ${
+                      className={`flex-shrink-0 w-12 h-12 sm:w-16 sm:h-16 rounded-md overflow-hidden border-2 ${
                         index === currentPhotoIndex
                           ? 'border-green-500'
                           : 'border-gray-200 hover:border-gray-300'
@@ -137,8 +137,8 @@ const GalleryModal = ({ gallery, open, onOpenChange }: GalleryModalProps) => {
             )}
           </div>
         ) : (
-          <div className="flex-1 flex items-center justify-center text-gray-500">
-            <p>Aucune photo disponible dans cette galerie</p>
+          <div className="flex-1 flex items-center justify-center text-gray-500 p-4">
+            <p className="text-center text-sm sm:text-base">Aucune photo disponible dans cette galerie</p>
           </div>
         )}
       </DialogContent>
