@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
@@ -27,7 +26,7 @@ const DashboardHeader = () => {
         title: "Déconnexion réussie",
         description: "Vous avez été déconnecté avec succès.",
       });
-      navigate("/auth");
+      navigate("/"); // Redirection vers la page d'accueil au lieu de /auth
     }
     setIsMenuOpen(false);
   };
