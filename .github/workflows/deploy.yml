@@ -29,7 +29,7 @@ jobs:
       with:
         host: 109.234.167.58
         username: beha7263
-        key: ${{ secrets.key_o2switcher }}
+        key: ${{ secrets.ssh-2025 }}
         port: 22
         source: "dist/*"
         target: "/home/beha7263/espoirsportifchorbane.com"
