@@ -13,9 +13,9 @@ jobs:
       - name: Trigger deploy script on VPS
         uses: appleboy/ssh-action@v0.1.10
         with:
-          host: 147.93.53.24
-          username: root
-          key: ${{ secrets.VPS_SSH_KEY_esc }}
+          host: 109.234.167.58
+          username: beha7263
+          key: ${{ secrets.key_o2switcher }}
           port: 22
           script: |
             cd /root/chorbane-espoir-web-portal
