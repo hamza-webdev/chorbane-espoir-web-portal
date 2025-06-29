@@ -28,8 +28,8 @@ jobs:
       uses: appleboy/scp-action@v0.1.7
       with:
         host: 109.234.167.58
-        username: beha7263
-        key: ${{ secrets.O2SWITCHER_SSH_KEY }}
+        username: root
+        key: ${{ secrets.HOSTINGER_SSH_KEY }}
         port: 22
         source: "dist/*"
-        target: "/home/beha7263/espoirsportifchorbane.com"
+        target: "/var/var/html/"
