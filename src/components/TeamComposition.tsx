@@ -177,10 +177,6 @@ const TeamComposition = () => {
     retry: 2,
     retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
     staleTime: 5 * 60 * 1000, // 5 minutes
-    onError: (error) => {
-      console.error('Players query failed, switching to mock data:', error);
-      setUseMockData(true);
-    }
   });
 
   const { data: staffData, isLoading: staffLoading, error: staffError, refetch: refetchStaff } = useQuery({
@@ -204,10 +200,6 @@ const TeamComposition = () => {
     retry: 2,
     retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
     staleTime: 5 * 60 * 1000,
-    onError: (error) => {
-      console.error('Staff query failed, switching to mock data:', error);
-      setUseMockData(true);
-    }
   });
 
   const { data: savedCompositions, refetch: refetchCompositions } = useQuery({
@@ -229,6 +221,14 @@ const TeamComposition = () => {
     retry: 1,
     enabled: !useMockData
   });
+
+  // Handle errors and switch to mock data if needed
+  useEffect(() => {
+    if ((playersError || staffError) && !useMockData) {
+      console.error('Query errors detected, switching to mock data:', { playersError, staffError });
+      setUseMockData(true);
+    }
+  }, [playersError, staffError, useMockData]);
 
   // Use mock data if there are connection issues
   const players = useMockData ? mockPlayers : playersData;
