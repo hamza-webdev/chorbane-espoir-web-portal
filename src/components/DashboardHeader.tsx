@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
@@ -26,7 +27,7 @@ const DashboardHeader = () => {
         title: "Déconnexion réussie",
         description: "Vous avez été déconnecté avec succès.",
       });
-      navigate("/"); // Redirection vers la page d'accueil au lieu de /auth
+      navigate("/");
     }
     setIsMenuOpen(false);
   };
@@ -47,11 +48,11 @@ const DashboardHeader = () => {
           {/* Logo et titre */}
           <div className="flex items-center space-x-3 flex-1 min-w-0">
             <div className="w-10 h-10 sm:w-12 sm:h-12 bg-green-600 rounded-full flex items-center justify-center flex-shrink-0">
-              <span className="text-white font-bold text-sm sm:text-lg">ESC</span>
+              <span className="text-white font-bold text-sm sm:text-lg">ESCH</span>
             </div>
             <div className="min-w-0 flex-1">
               <h1 className="text-lg sm:text-xl lg:text-2xl font-bold text-gray-900 truncate">
-                Dashboard ESC Chorbane
+                Dashboard ESCH Chorbane
               </h1>
               <p className="text-gray-600 text-xs sm:text-sm mt-1 hidden sm:block truncate">
                 Gestion du contenu et des données du club
