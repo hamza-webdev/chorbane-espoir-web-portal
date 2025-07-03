@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -163,7 +162,11 @@ const TeamComposition = () => {
     }) => {
       const { data, error } = await supabase
         .from('team_compositions')
-        .insert([compositionData])
+        .insert({
+          title: compositionData.title,
+          formation: compositionData.formation,
+          player_positions: compositionData.player_positions as any
+        })
         .select()
         .single();
 
