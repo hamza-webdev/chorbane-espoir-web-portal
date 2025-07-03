@@ -337,6 +337,33 @@ export type Database = {
         }
         Relationships: []
       }
+      team_compositions: {
+        Row: {
+          created_at: string
+          formation: string
+          id: string
+          player_positions: Json
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          formation: string
+          id?: string
+          player_positions: Json
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          formation?: string
+          id?: string
+          player_positions?: Json
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       user_reactions: {
         Row: {
           created_at: string
