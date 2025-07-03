@@ -547,17 +547,27 @@ const TeamComposition = () => {
           </Card>
         </div>
 
-        {/* Football field - Reduced size by 25% */}
-        <Card className="lg:col-span-8 order-1 lg:order-2 mx-auto max-w-2xl bg-green-600 shadow-2xl">
+        {/* Football field with stadium background */}
+        <Card className="lg:col-span-8 order-1 lg:order-2 mx-auto max-w-2xl shadow-2xl overflow-hidden">
           <CardContent className="p-2 sm:p-3">
             <div 
-              className={`relative bg-green-500 rounded-lg overflow-hidden ${isDragging ? 'ring-2 ring-blue-400' : ''}`}
-              style={{ aspectRatio: '1.5/1.8', cursor: isDragging ? 'grabbing' : 'default' }}
+              className={`relative rounded-lg overflow-hidden ${isDragging ? 'ring-2 ring-blue-400' : ''}`}
+              style={{ 
+                aspectRatio: '1.5/1.8', 
+                cursor: isDragging ? 'grabbing' : 'default',
+                backgroundImage: `url('https://images.unsplash.com/photo-1433086966358-54859d0ed716?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80')`,
+                backgroundSize: 'cover',
+                backgroundPosition: 'center',
+                backgroundRepeat: 'no-repeat'
+              }}
               onDragOver={handleDragOver}
               onDrop={handleDrop}
             >
+              {/* Green field overlay with transparency */}
+              <div className="absolute inset-0 bg-green-500/80 rounded-lg"></div>
+              
               {/* Field markings */}
-              <svg className="absolute inset-0 w-full h-full" viewBox="0 0 200 300">
+              <svg className="absolute inset-0 w-full h-full z-10" viewBox="0 0 200 300">
                 {/* Outer lines */}
                 <rect x="10" y="10" width="180" height="280" fill="none" stroke="white" strokeWidth="2"/>
                 <circle cx="100" cy="150" r="30" fill="none" stroke="white" strokeWidth="2"/>
@@ -575,7 +585,7 @@ const TeamComposition = () => {
 
               {/* Drop zone indicator */}
               {isDragging && (
-                <div className="absolute inset-0 bg-blue-400/20 border-2 border-dashed border-blue-400 rounded-lg flex items-center justify-center">
+                <div className="absolute inset-0 bg-blue-400/20 border-2 border-dashed border-blue-400 rounded-lg flex items-center justify-center z-20">
                   <div className="text-white bg-blue-600 px-4 py-2 rounded-lg font-medium">
                     Déposez le joueur ici
                   </div>
@@ -588,7 +598,7 @@ const TeamComposition = () => {
                 return (
                   <div
                     key={player.id}
-                    className={`absolute transform -translate-x-1/2 -translate-y-1/2 cursor-grab active:cursor-grabbing transition-all duration-500 ${
+                    className={`absolute transform -translate-x-1/2 -translate-y-1/2 cursor-grab active:cursor-grabbing transition-all duration-500 z-30 ${
                       animateIn ? 'opacity-100 scale-100' : 'opacity-0 scale-75'
                     } ${isCustomPositioned ? 'ring-2 ring-yellow-400' : ''}`}
                     style={{
@@ -616,7 +626,7 @@ const TeamComposition = () => {
                         )}
                       </div>
                       <div className="mt-1 text-center">
-                        <p className="text-white text-xs font-medium shadow-lg bg-black/30 px-1 rounded backdrop-blur-sm">
+                        <p className="text-white text-xs font-medium shadow-lg bg-black/50 px-1 rounded backdrop-blur-sm">
                           {player.name.split(' ').slice(-1)[0]}
                         </p>
                       </div>
@@ -764,7 +774,7 @@ const TeamComposition = () => {
                 <p className="text-sm text-gray-600 mb-2">Biographie</p>
                 <p className="text-sm leading-relaxed">{selectedPlayer.bio}</p>
               </div>
-            )}
+              )}
           </div>
         </DialogContent>
       </Dialog>
