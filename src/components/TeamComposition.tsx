@@ -9,7 +9,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Users, Shirt, Save, Plus, User } from "lucide-react";
+import { Users, Shirt, Save, Plus, User, AlertCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 interface Player {
@@ -135,23 +135,31 @@ const TeamComposition = () => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  const { data: players, isLoading } = useQuery({
+  const { data: players, isLoading: playersLoading, error: playersError } = useQuery({
     queryKey: ['players-composition'],
     queryFn: async () => {
+      console.log('Fetching players...');
       const { data, error } = await supabase
         .from('players')
         .select('*')
         .eq('active', true)
         .order('jersey_number', { ascending: true });
       
-      if (error) throw error;
+      if (error) {
+        console.error('Error fetching players:', error);
+        throw error;
+      }
+      console.log('Players fetched:', data);
       return data as Player[];
-    }
+    },
+    retry: 3,
+    retryDelay: 1000
   });
 
-  const { data: staff } = useQuery({
+  const { data: staff, isLoading: staffLoading, error: staffError } = useQuery({
     queryKey: ['staff-composition'],
     queryFn: async () => {
+      console.log('Fetching staff...');
       const { data, error } = await supabase
         .from('staff')
         .select('*')
@@ -159,22 +167,35 @@ const TeamComposition = () => {
         .in('role', ['entraineur', 'manager'])
         .order('role', { ascending: true });
       
-      if (error) throw error;
+      if (error) {
+        console.error('Error fetching staff:', error);
+        throw error;
+      }
+      console.log('Staff fetched:', data);
       return data as Staff[];
-    }
+    },
+    retry: 3,
+    retryDelay: 1000
   });
 
   const { data: savedCompositions } = useQuery({
     queryKey: ['saved-compositions'],
     queryFn: async () => {
+      console.log('Fetching saved compositions...');
       const { data, error } = await supabase
         .from('team_compositions')
         .select('*')
         .order('created_at', { ascending: false });
       
-      if (error) throw error;
+      if (error) {
+        console.error('Error fetching compositions:', error);
+        throw error;
+      }
+      console.log('Compositions fetched:', data);
       return data as SavedComposition[];
-    }
+    },
+    retry: 3,
+    retryDelay: 1000
   });
 
   const saveCompositionMutation = useMutation({
@@ -204,6 +225,7 @@ const TeamComposition = () => {
       queryClient.invalidateQueries({ queryKey: ['saved-compositions'] });
     },
     onError: (error: any) => {
+      console.error('Save composition error:', error);
       toast({
         title: "Erreur",
         description: error.message || "Impossible de sauvegarder la composition.",
@@ -353,12 +375,68 @@ const TeamComposition = () => {
     setLoadedComposition(null);
   };
 
+  // Enhanced error handling
+  const isLoading = playersLoading || staffLoading;
+  const hasError = playersError || staffError;
+
+  console.log('Render state:', { isLoading, hasError, playersCount: players?.length, staffCount: staff?.length });
+
+  if (hasError) {
+    console.error('Component errors:', { playersError, staffError });
+    return (
+      <div className="flex justify-center items-center min-h-[400px]">
+        <div className="text-center">
+          <AlertCircle className="mx-auto h-12 w-12 text-red-500 mb-4" />
+          <p className="text-red-600 mb-2">Erreur de chargement des données</p>
+          <p className="text-gray-600 text-sm">
+            {playersError?.message || staffError?.message || "Une erreur s'est produite"}
+          </p>
+          <Button 
+            onClick={() => {
+              queryClient.invalidateQueries({ queryKey: ['players-composition'] });
+              queryClient.invalidateQueries({ queryKey: ['staff-composition'] });
+            }}
+            className="mt-4"
+          >
+            Réessayer
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
   if (isLoading) {
     return (
       <div className="flex justify-center items-center min-h-[400px]">
         <div className="text-center">
           <Users className="mx-auto h-12 w-12 text-gray-400 animate-pulse mb-4" />
           <p className="text-gray-600">Chargement de la composition...</p>
+          <div className="mt-2 text-sm text-gray-500">
+            {playersLoading && "Chargement des joueurs..."}
+            {staffLoading && "Chargement du staff..."}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Ensure we have data before proceeding
+  if (!players || !staff) {
+    console.warn('Missing data:', { players: !!players, staff: !!staff });
+    return (
+      <div className="flex justify-center items-center min-h-[400px]">
+        <div className="text-center">
+          <AlertCircle className="mx-auto h-12 w-12 text-yellow-500 mb-4" />
+          <p className="text-gray-600">Aucune donnée disponible</p>
+          <Button 
+            onClick={() => {
+              queryClient.invalidateQueries({ queryKey: ['players-composition'] });
+              queryClient.invalidateQueries({ queryKey: ['staff-composition'] });
+            }}
+            className="mt-4"
+          >
+            Recharger
+          </Button>
         </div>
       </div>
     );
@@ -366,7 +444,7 @@ const TeamComposition = () => {
 
   const assignedPlayers = assignPlayersToPositions();
   const allAssignedPlayerIds = assignedPlayers.map(ap => ap.player.id);
-  const availablePlayers = players?.filter(player => !allAssignedPlayerIds.includes(player.id)) || [];
+  const availablePlayers = players.filter(player => !allAssignedPlayerIds.includes(player.id));
 
   return (
     <div className="space-y-6">
@@ -442,13 +520,13 @@ const TeamComposition = () => {
             <CardContent className="p-4">
               <h3 className="text-sm font-semibold mb-3 text-center">Banc de touche</h3>
               <div className="space-y-3">
-                {staff?.map((member) => (
+                {staff.map((member) => (
                   <div
                     key={member.id}
                     draggable
                     onDragStart={(e) => handleDragStart(e, member as any)}
                     onDragEnd={handleDragEnd}
-                    className="flex flex-col items-center p-2 border rounded-lg cursor-move hover:bg-gray-50 transition-colors bg-blue-50 border-blue-200"
+                    className="flex flex-col items-center p-2 border rounded-lg cursor-move hover:cursor-grab active:cursor-grabbing hover:bg-gray-50 transition-colors bg-blue-50 border-blue-200"
                   >
                     <Avatar className="h-10 w-10 mb-2">
                       <AvatarImage src={member.photo || undefined} alt={member.name} />
@@ -470,11 +548,11 @@ const TeamComposition = () => {
         </div>
 
         {/* Football field - Reduced size by 25% */}
-        <Card className="lg:col-span-8 order-1 lg:order-2 mx-auto max-w-3xl bg-green-600 shadow-2xl">
-          <CardContent className="p-3 sm:p-4">
+        <Card className="lg:col-span-8 order-1 lg:order-2 mx-auto max-w-2xl bg-green-600 shadow-2xl">
+          <CardContent className="p-2 sm:p-3">
             <div 
               className={`relative bg-green-500 rounded-lg overflow-hidden ${isDragging ? 'ring-2 ring-blue-400' : ''}`}
-              style={{ aspectRatio: '1.5/2.25', cursor: isDragging ? 'grabbing' : 'default' }}
+              style={{ aspectRatio: '1.5/1.8', cursor: isDragging ? 'grabbing' : 'default' }}
               onDragOver={handleDragOver}
               onDrop={handleDrop}
             >
@@ -525,14 +603,14 @@ const TeamComposition = () => {
                   >
                     <div className="flex flex-col items-center group hover:scale-110 transition-transform duration-200">
                       <div className="relative">
-                        <Avatar className="h-6 w-6 sm:h-10 sm:w-10 border-2 border-white shadow-lg bg-white">
+                        <Avatar className="h-5 w-5 sm:h-8 sm:w-8 border-2 border-white shadow-lg bg-white">
                           <AvatarImage src={player.photo || undefined} alt={player.name} />
                           <AvatarFallback className="bg-green-700 text-white text-xs">
                             <Shirt className="h-2 w-2 sm:h-3 sm:w-3" />
                           </AvatarFallback>
                         </Avatar>
                         {player.jersey_number && (
-                          <Badge className="absolute -bottom-1 -right-1 h-3 w-3 sm:h-4 sm:w-4 rounded-full bg-blue-600 text-white text-xs flex items-center justify-center p-0 border border-white">
+                          <Badge className="absolute -bottom-1 -right-1 h-2 w-2 sm:h-3 sm:w-3 rounded-full bg-blue-600 text-white text-xs flex items-center justify-center p-0 border border-white">
                             {player.jersey_number}
                           </Badge>
                         )}
@@ -562,7 +640,7 @@ const TeamComposition = () => {
                     draggable
                     onDragStart={(e) => handleDragStart(e, player)}
                     onDragEnd={handleDragEnd}
-                    className="flex flex-col items-center p-2 border rounded-lg cursor-move hover:bg-gray-50 transition-colors bg-orange-50 border-orange-200"
+                    className="flex flex-col items-center p-2 border rounded-lg cursor-move hover:cursor-grab active:cursor-grabbing hover:bg-gray-50 transition-colors bg-orange-50 border-orange-200"
                   >
                     <Avatar className="h-10 w-10 mb-2">
                       <AvatarImage src={player.photo || undefined} alt={player.name} />
@@ -595,7 +673,7 @@ const TeamComposition = () => {
                 draggable
                 onDragStart={(e) => handleDragStart(e, player)}
                 onDragEnd={handleDragEnd}
-                className="flex flex-col items-center p-2 border rounded-lg cursor-move hover:bg-gray-50 transition-colors"
+                className="flex flex-col items-center p-2 border rounded-lg cursor-move hover:cursor-grab active:cursor-grabbing hover:bg-gray-50 transition-colors"
                 style={{ cursor: isDragging && draggedPlayer?.id === player.id ? 'grabbing' : 'grab' }}
               >
                 <Avatar className="h-12 w-12 mb-2">
