@@ -16,13 +16,14 @@ const Header = () => {
   const isMobile = useIsMobile();
 
   const navigation = [
-    { name: t('header.home'), href: "#accueil" },
-    { name: t('header.news'), href: "#actualites" },
-    { name: t('header.team'), href: "#equipe" },
-    { name: t('header.matches'), href: "#matchs" },
-    { name: t('header.galleries'), href: "#galeries" },
-    { name: "Soutenez le club", href: "#donations" },
-    { name: t('header.contact'), href: "#contact" }
+    { name: t('header.home'), href: "#accueil", type: "scroll" },
+    { name: t('header.news'), href: "#actualites", type: "scroll" },
+    { name: t('header.team'), href: "#equipe", type: "scroll" },
+    { name: "Composition", href: "/composition", type: "navigate" },
+    { name: t('header.matches'), href: "#matchs", type: "scroll" },
+    { name: t('header.galleries'), href: "#galeries", type: "scroll" },
+    { name: "Soutenez le club", href: "#donations", type: "scroll" },
+    { name: t('header.contact'), href: "#contact", type: "scroll" }
   ];
 
   const toggleMenu = () => {
@@ -38,10 +39,14 @@ const Header = () => {
     setIsMenuOpen(false);
   };
 
-  const scrollToSection = (href: string) => {
-    const element = document.querySelector(href);
-    if (element) {
-      element.scrollIntoView({ behavior: 'smooth' });
+  const handleNavigation = (item: typeof navigation[0]) => {
+    if (item.type === "navigate") {
+      navigate(item.href);
+    } else {
+      const element = document.querySelector(item.href);
+      if (element) {
+        element.scrollIntoView({ behavior: 'smooth' });
+      }
     }
     setIsMenuOpen(false);
   };
@@ -70,7 +75,7 @@ const Header = () => {
             {navigation.map((item) => (
               <button
                 key={item.name}
-                onClick={() => scrollToSection(item.href)}
+                onClick={() => handleNavigation(item)}
                 className="text-gray-700 hover:text-green-600 font-medium transition-colors duration-200 px-2 py-2 rounded-md text-sm xl:text-base whitespace-nowrap hover:bg-green-50"
               >
                 {item.name}
@@ -124,7 +129,7 @@ const Header = () => {
                 {navigation.map((item) => (
                   <button
                     key={item.name}
-                    onClick={() => scrollToSection(item.href)}
+                    onClick={() => handleNavigation(item)}
                     className="w-full text-left text-gray-700 hover:text-green-600 hover:bg-green-50 font-medium transition-all duration-200 py-3 px-3 rounded-lg text-base"
                   >
                     {item.name}
