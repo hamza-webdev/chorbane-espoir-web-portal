@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -163,7 +162,11 @@ const TeamComposition = () => {
     }) => {
       const { data, error } = await supabase
         .from('team_compositions')
-        .insert([compositionData])
+        .insert({
+          title: compositionData.title,
+          formation: compositionData.formation,
+          player_positions: compositionData.player_positions as any
+        })
         .select()
         .single();
 
@@ -420,12 +423,12 @@ const TeamComposition = () => {
         </CardContent>
       </Card>
 
-      {/* Football field */}
-      <Card className="mx-auto max-w-4xl bg-green-600 shadow-2xl">
-        <CardContent className="p-4 sm:p-6">
+      {/* Football field - Reduced size by 25% */}
+      <Card className="mx-auto max-w-3xl bg-green-600 shadow-2xl">
+        <CardContent className="p-3 sm:p-4">
           <div 
             className={`relative bg-green-500 rounded-lg overflow-hidden ${isDragging ? 'ring-2 ring-blue-400' : ''}`}
-            style={{ aspectRatio: '2/3' }}
+            style={{ aspectRatio: '1.5/2.25' }}
             onDragOver={handleDragOver}
             onDrop={handleDrop}
           >
@@ -476,20 +479,20 @@ const TeamComposition = () => {
                 >
                   <div className="flex flex-col items-center group hover:scale-110 transition-transform duration-200">
                     <div className="relative">
-                      <Avatar className="h-8 w-8 sm:h-12 sm:w-12 border-2 border-white shadow-lg bg-white">
+                      <Avatar className="h-6 w-6 sm:h-10 sm:w-10 border-2 border-white shadow-lg bg-white">
                         <AvatarImage src={player.photo || undefined} alt={player.name} />
-                        <AvatarFallback className="bg-green-700 text-white text-xs sm:text-sm">
-                          <Shirt className="h-3 w-3 sm:h-4 sm:w-4" />
+                        <AvatarFallback className="bg-green-700 text-white text-xs">
+                          <Shirt className="h-2 w-2 sm:h-3 sm:w-3" />
                         </AvatarFallback>
                       </Avatar>
                       {player.jersey_number && (
-                        <Badge className="absolute -bottom-1 -right-1 h-4 w-4 sm:h-5 sm:w-5 rounded-full bg-blue-600 text-white text-xs flex items-center justify-center p-0 border border-white">
+                        <Badge className="absolute -bottom-1 -right-1 h-3 w-3 sm:h-4 sm:w-4 rounded-full bg-blue-600 text-white text-xs flex items-center justify-center p-0 border border-white">
                           {player.jersey_number}
                         </Badge>
                       )}
                     </div>
                     <div className="mt-1 text-center">
-                      <p className="text-white text-xs sm:text-sm font-medium shadow-lg bg-black/30 px-1 rounded backdrop-blur-sm">
+                      <p className="text-white text-xs font-medium shadow-lg bg-black/30 px-1 rounded backdrop-blur-sm">
                         {player.name.split(' ').slice(-1)[0]}
                       </p>
                     </div>
