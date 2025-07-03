@@ -1,3 +1,4 @@
+
 import { useQuery } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 import { supabase } from "@/integrations/supabase/client";
@@ -12,6 +13,7 @@ import { useState } from "react";
 import MatchDialog from "@/components/dashboard/MatchDialog";
 import Header from "@/components/Header";
 import GalleryModal from "@/components/GalleryModal";
+import MediaPreviewModal from "@/components/MediaPreviewModal";
 import ReactionButtons from "@/components/ReactionButtons";
 import DonationsSection from "@/components/DonationsSection";
 import DonationStats from "@/components/DonationStats";
@@ -22,6 +24,9 @@ const Index = () => {
   const [matchDialogOpen, setMatchDialogOpen] = useState(false);
   const [selectedGallery, setSelectedGallery] = useState(null);
   const [galleryModalOpen, setGalleryModalOpen] = useState(false);
+  const [mediaPreviewOpen, setMediaPreviewOpen] = useState(false);
+  const [selectedMedia, setSelectedMedia] = useState<any>(null);
+  const [mediaType, setMediaType] = useState<'photo' | 'article'>('photo');
 
   // Get the appropriate date-fns locale
   const dateLocale = i18n.language === 'ar' ? ar : fr;
@@ -123,6 +128,21 @@ const Index = () => {
     setGalleryModalOpen(true);
   };
 
+  const handleArticleClick = (article: any) => {
+    setSelectedMedia(article);
+    setMediaType('article');
+    setMediaPreviewOpen(true);
+  };
+
+  const handlePhotoClick = (photo: any, title: string) => {
+    setSelectedMedia({
+      ...photo,
+      title: title
+    });
+    setMediaType('photo');
+    setMediaPreviewOpen(true);
+  };
+
   return (
     <div className="min-h-screen">
       <Header />
@@ -167,7 +187,7 @@ const Index = () => {
                   <CardContent className="p-8">
                     <div className="text-center">
                       <div className="text-2xl font-bold mb-4">
-                        ESC {t('matches.vs')} {nextMatch.opponent_team}
+                        ESCH {t('matches.vs')} {nextMatch.opponent_team}
                       </div>
                       <div className="flex items-center justify-center space-x-6 text-gray-600 mb-4">
                         <div className="flex items-center">
@@ -215,12 +235,13 @@ const Index = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 {players?.map((player) => (
                   <Card key={player.id} className="overflow-hidden hover:shadow-lg transition-shadow">
-                    <div className="h-48 bg-gray-200 flex items-center justify-center">
+                    <div className="h-48 bg-gray-200 flex items-center justify-center cursor-pointer"
+                         onClick={() => player.photo && handlePhotoClick({ image_url: player.photo, caption: player.bio }, player.name)}>
                       {player.photo ? (
                         <img 
                           src={player.photo} 
                           alt={player.name}
-                          className="w-full h-full object-cover"
+                          className="w-full h-full object-cover hover:scale-105 transition-transform"
                           onError={(e) => {
                             const target = e.target as HTMLImageElement;
                             target.style.display = 'none';
@@ -267,12 +288,13 @@ const Index = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {staff?.map((member) => (
                   <Card key={member.id} className="overflow-hidden hover:shadow-lg transition-shadow">
-                    <div className="h-48 bg-gray-200 flex items-center justify-center">
+                    <div className="h-48 bg-gray-200 flex items-center justify-center cursor-pointer"
+                         onClick={() => member.photo && handlePhotoClick({ image_url: member.photo, caption: member.bio }, member.name)}>
                       {member.photo ? (
                         <img 
                           src={member.photo} 
                           alt={member.name}
-                          className="w-full h-full object-cover"
+                          className="w-full h-full object-cover hover:scale-105 transition-transform"
                           onError={(e) => {
                             const target = e.target as HTMLImageElement;
                             target.style.display = 'none';
@@ -335,7 +357,7 @@ const Index = () => {
                   <Card key={match.id} className="overflow-hidden hover:shadow-lg transition-shadow">
                     <CardHeader>
                       <CardTitle className="text-lg">
-                        ESC {t('matches.vs')} {match.opponent_team}
+                        ESCH {t('matches.vs')} {match.opponent_team}
                       </CardTitle>
                       <CardDescription>
                         <div className="flex items-center space-x-2 mb-2">
@@ -392,13 +414,14 @@ const Index = () => {
             
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
               {articles?.map((article) => (
-                <Card key={article.id} className="overflow-hidden hover:shadow-lg transition-shadow">
+                <Card key={article.id} className="overflow-hidden hover:shadow-lg transition-shadow cursor-pointer"
+                      onClick={() => handleArticleClick(article)}>
                   {article.featured_image && (
                     <div className="h-48 bg-gray-200">
                       <img 
                         src={article.featured_image} 
                         alt={article.title}
-                        className="w-full h-full object-cover"
+                        className="w-full h-full object-cover hover:scale-105 transition-transform"
                         onError={(e) => {
                           const target = e.target as HTMLImageElement;
                           target.style.display = 'none';
@@ -447,7 +470,7 @@ const Index = () => {
                       <img 
                         src={gallery.photos[0].image_url} 
                         alt={gallery.title}
-                        className="w-full h-full object-cover"
+                        className="w-full h-full object-cover hover:scale-105 transition-transform"
                       />
                     ) : (
                       <Camera className="h-16 w-16 text-gray-400" />
@@ -567,7 +590,7 @@ const Index = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
             <div>
-              <h3 className="text-xl font-bold mb-4">ESC Chorbane</h3>
+              <h3 className="text-xl font-bold mb-4">ESCH Chorbane</h3>
               <p className="text-gray-400">
                 {t('footer.description')}
               </p>
@@ -615,6 +638,13 @@ const Index = () => {
         gallery={selectedGallery}
         open={galleryModalOpen}
         onOpenChange={setGalleryModalOpen}
+      />
+
+      <MediaPreviewModal
+        open={mediaPreviewOpen}
+        onOpenChange={setMediaPreviewOpen}
+        type={mediaType}
+        data={selectedMedia}
       />
     </div>
   );
