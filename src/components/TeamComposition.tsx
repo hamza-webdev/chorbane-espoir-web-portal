@@ -9,8 +9,28 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Users, Shirt, Save, Plus, User, AlertCircle } from "lucide-react";
+import { Users, Shirt, Save, Plus, User, AlertCircle, RefreshCw } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+
+// Mock data for fallback
+const mockPlayers = [
+  { id: '1', name: 'Gardien', jersey_number: 1, position: 'gardien', photo: null, age: 25, height: 185, weight: 80, bio: null },
+  { id: '2', name: 'Défenseur 1', jersey_number: 2, position: 'defenseur', photo: null, age: 24, height: 180, weight: 75, bio: null },
+  { id: '3', name: 'Défenseur 2', jersey_number: 3, position: 'defenseur', photo: null, age: 26, height: 182, weight: 78, bio: null },
+  { id: '4', name: 'Défenseur 3', jersey_number: 4, position: 'defenseur', photo: null, age: 23, height: 178, weight: 73, bio: null },
+  { id: '5', name: 'Défenseur 4', jersey_number: 5, position: 'defenseur', photo: null, age: 27, height: 184, weight: 79, bio: null },
+  { id: '6', name: 'Milieu 1', jersey_number: 6, position: 'milieu', photo: null, age: 25, height: 175, weight: 70, bio: null },
+  { id: '7', name: 'Milieu 2', jersey_number: 7, position: 'milieu', photo: null, age: 24, height: 177, weight: 72, bio: null },
+  { id: '8', name: 'Milieu 3', jersey_number: 8, position: 'milieu', photo: null, age: 26, height: 176, weight: 71, bio: null },
+  { id: '9', name: 'Attaquant 1', jersey_number: 9, position: 'attaquant', photo: null, age: 23, height: 180, weight: 75, bio: null },
+  { id: '10', name: 'Attaquant 2', jersey_number: 10, position: 'attaquant', photo: null, age: 25, height: 178, weight: 74, bio: null },
+  { id: '11', name: 'Attaquant 3', jersey_number: 11, position: 'attaquant', photo: null, age: 24, height: 179, weight: 76, bio: null },
+];
+
+const mockStaff = [
+  { id: '1', name: 'Entraîneur Principal', role: 'entraineur', photo: null, bio: null },
+  { id: '2', name: 'Président', role: 'manager', photo: null, bio: null },
+];
 
 interface Player {
   id: string;
@@ -131,14 +151,16 @@ const TeamComposition = () => {
   const [draggedPlayer, setDraggedPlayer] = useState<Player | null>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [loadedComposition, setLoadedComposition] = useState<string | null>(null);
+  const [useMockData, setUseMockData] = useState(false);
   
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  const { data: players, isLoading: playersLoading, error: playersError } = useQuery({
+  // Enhanced queries with better error handling and fallback
+  const { data: playersData, isLoading: playersLoading, error: playersError, refetch: refetchPlayers } = useQuery({
     queryKey: ['players-composition'],
     queryFn: async () => {
-      console.log('Fetching players...');
+      console.log('Attempting to fetch players...');
       const { data, error } = await supabase
         .from('players')
         .select('*')
@@ -146,20 +168,21 @@ const TeamComposition = () => {
         .order('jersey_number', { ascending: true });
       
       if (error) {
-        console.error('Error fetching players:', error);
+        console.error('Supabase players error:', error);
         throw error;
       }
-      console.log('Players fetched:', data);
+      console.log('Players fetched successfully:', data?.length || 0);
       return data as Player[];
     },
-    retry: 3,
-    retryDelay: 1000
+    retry: 2,
+    retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
+    staleTime: 5 * 60 * 1000, // 5 minutes
   });
 
-  const { data: staff, isLoading: staffLoading, error: staffError } = useQuery({
+  const { data: staffData, isLoading: staffLoading, error: staffError, refetch: refetchStaff } = useQuery({
     queryKey: ['staff-composition'],
     queryFn: async () => {
-      console.log('Fetching staff...');
+      console.log('Attempting to fetch staff...');
       const { data, error } = await supabase
         .from('staff')
         .select('*')
@@ -168,35 +191,50 @@ const TeamComposition = () => {
         .order('role', { ascending: true });
       
       if (error) {
-        console.error('Error fetching staff:', error);
+        console.error('Supabase staff error:', error);
         throw error;
       }
-      console.log('Staff fetched:', data);
+      console.log('Staff fetched successfully:', data?.length || 0);
       return data as Staff[];
     },
-    retry: 3,
-    retryDelay: 1000
+    retry: 2,
+    retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
+    staleTime: 5 * 60 * 1000,
   });
 
-  const { data: savedCompositions } = useQuery({
+  const { data: savedCompositions, refetch: refetchCompositions } = useQuery({
     queryKey: ['saved-compositions'],
     queryFn: async () => {
-      console.log('Fetching saved compositions...');
+      console.log('Attempting to fetch saved compositions...');
       const { data, error } = await supabase
         .from('team_compositions')
         .select('*')
         .order('created_at', { ascending: false });
       
       if (error) {
-        console.error('Error fetching compositions:', error);
+        console.error('Compositions error:', error);
         throw error;
       }
-      console.log('Compositions fetched:', data);
+      console.log('Compositions fetched successfully:', data?.length || 0);
       return data as SavedComposition[];
     },
-    retry: 3,
-    retryDelay: 1000
+    retry: 1,
+    enabled: !useMockData
   });
+
+  // Handle errors and switch to mock data if needed
+  useEffect(() => {
+    if ((playersError || staffError) && !useMockData) {
+      console.error('Query errors detected, switching to mock data:', { playersError, staffError });
+      setUseMockData(true);
+    }
+  }, [playersError, staffError, useMockData]);
+
+  // Use mock data if there are connection issues
+  const players = useMockData ? mockPlayers : playersData;
+  const staff = useMockData ? mockStaff : staffData;
+  const isLoading = useMockData ? false : (playersLoading || staffLoading);
+  const hasError = !useMockData && (playersError || staffError);
 
   const saveCompositionMutation = useMutation({
     mutationFn: async (compositionData: {
@@ -204,6 +242,9 @@ const TeamComposition = () => {
       formation: string;
       player_positions: PlayerPosition[];
     }) => {
+      if (useMockData) {
+        throw new Error("Sauvegarde indisponible en mode démonstration");
+      }
       const { data, error } = await supabase
         .from('team_compositions')
         .insert({
@@ -240,11 +281,25 @@ const TeamComposition = () => {
     return () => clearTimeout(timer);
   }, [selectedFormation]);
 
+  const handleRetry = () => {
+    setUseMockData(false);
+    refetchPlayers();
+    refetchStaff();
+    refetchCompositions();
+  };
+
+  const handleUseMockData = () => {
+    setUseMockData(true);
+    toast({
+      title: "Mode démonstration",
+      description: "Utilisation des données de démonstration.",
+    });
+  };
+
   const handleDragStart = (e: React.DragEvent, player: Player) => {
     setDraggedPlayer(player);
     setIsDragging(true);
     e.dataTransfer.effectAllowed = 'move';
-    // Curseur personnalisé pendant le drag
     const dragImage = document.createElement('div');
     dragImage.innerHTML = '⚽';
     dragImage.style.fontSize = '24px';
@@ -273,7 +328,6 @@ const TeamComposition = () => {
     const x = ((e.clientX - rect.left) / rect.width) * 100;
     const y = ((e.clientY - rect.top) / rect.height) * 100;
 
-    // Ensure position is within field boundaries
     const clampedX = Math.max(10, Math.min(90, x));
     const clampedY = Math.max(10, Math.min(90, y));
 
@@ -375,31 +429,25 @@ const TeamComposition = () => {
     setLoadedComposition(null);
   };
 
-  // Enhanced error handling
-  const isLoading = playersLoading || staffLoading;
-  const hasError = playersError || staffError;
-
-  console.log('Render state:', { isLoading, hasError, playersCount: players?.length, staffCount: staff?.length });
-
-  if (hasError) {
-    console.error('Component errors:', { playersError, staffError });
+  // Enhanced error handling with retry options
+  if (hasError && !useMockData) {
     return (
       <div className="flex justify-center items-center min-h-[400px]">
-        <div className="text-center">
+        <div className="text-center max-w-md">
           <AlertCircle className="mx-auto h-12 w-12 text-red-500 mb-4" />
-          <p className="text-red-600 mb-2">Erreur de chargement des données</p>
-          <p className="text-gray-600 text-sm">
-            {playersError?.message || staffError?.message || "Une erreur s'est produite"}
+          <h3 className="text-lg font-semibold text-red-600 mb-2">Problème de connexion</h3>
+          <p className="text-gray-600 mb-4">
+            Impossible de charger les données depuis la base de données.
           </p>
-          <Button 
-            onClick={() => {
-              queryClient.invalidateQueries({ queryKey: ['players-composition'] });
-              queryClient.invalidateQueries({ queryKey: ['staff-composition'] });
-            }}
-            className="mt-4"
-          >
-            Réessayer
-          </Button>
+          <div className="space-y-2">
+            <Button onClick={handleRetry} className="mr-2">
+              <RefreshCw className="h-4 w-4 mr-2" />
+              Réessayer
+            </Button>
+            <Button onClick={handleUseMockData} variant="outline">
+              Mode démonstration
+            </Button>
+          </div>
         </div>
       </div>
     );
@@ -411,31 +459,19 @@ const TeamComposition = () => {
         <div className="text-center">
           <Users className="mx-auto h-12 w-12 text-gray-400 animate-pulse mb-4" />
           <p className="text-gray-600">Chargement de la composition...</p>
-          <div className="mt-2 text-sm text-gray-500">
-            {playersLoading && "Chargement des joueurs..."}
-            {staffLoading && "Chargement du staff..."}
-          </div>
         </div>
       </div>
     );
   }
 
-  // Ensure we have data before proceeding
   if (!players || !staff) {
-    console.warn('Missing data:', { players: !!players, staff: !!staff });
     return (
       <div className="flex justify-center items-center min-h-[400px]">
         <div className="text-center">
           <AlertCircle className="mx-auto h-12 w-12 text-yellow-500 mb-4" />
-          <p className="text-gray-600">Aucune donnée disponible</p>
-          <Button 
-            onClick={() => {
-              queryClient.invalidateQueries({ queryKey: ['players-composition'] });
-              queryClient.invalidateQueries({ queryKey: ['staff-composition'] });
-            }}
-            className="mt-4"
-          >
-            Recharger
+          <p className="text-gray-600 mb-4">Aucune donnée disponible</p>
+          <Button onClick={handleUseMockData}>
+            Utiliser les données de démonstration
           </Button>
         </div>
       </div>
@@ -448,6 +484,22 @@ const TeamComposition = () => {
 
   return (
     <div className="space-y-6">
+      {/* Mock data indicator */}
+      {useMockData && (
+        <Card className="border-yellow-200 bg-yellow-50">
+          <CardContent className="p-4">
+            <div className="flex items-center gap-2 text-yellow-800">
+              <AlertCircle className="h-4 w-4" />
+              <span className="text-sm font-medium">Mode démonstration activé</span>
+              <Button onClick={handleRetry} size="sm" variant="outline" className="ml-auto">
+                <RefreshCw className="h-4 w-4 mr-1" />
+                Reconnecter
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       {/* Composition management */}
       <Card>
         <CardContent className="p-4">
@@ -462,28 +514,30 @@ const TeamComposition = () => {
                 className="mt-1"
               />
             </div>
-            <div>
-              <Label>Compositions sauvegardées</Label>
-              <Select onValueChange={(value) => {
-                const composition = savedCompositions?.find(c => c.id === value);
-                if (composition) loadComposition(composition);
-              }}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Charger une composition" />
-                </SelectTrigger>
-                <SelectContent>
-                  {savedCompositions?.map((composition) => (
-                    <SelectItem key={composition.id} value={composition.id}>
-                      {composition.title} ({composition.formation})
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+            {!useMockData && (
+              <div>
+                <Label>Compositions sauvegardées</Label>
+                <Select onValueChange={(value) => {
+                  const composition = savedCompositions?.find(c => c.id === value);
+                  if (composition) loadComposition(composition);
+                }}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Charger une composition" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {savedCompositions?.map((composition) => (
+                      <SelectItem key={composition.id} value={composition.id}>
+                        {composition.title} ({composition.formation})
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
             <div className="flex gap-2">
               <Button
                 onClick={handleSaveComposition}
-                disabled={saveCompositionMutation.isPending}
+                disabled={saveCompositionMutation.isPending || useMockData}
                 className="bg-green-600 hover:bg-green-700"
               >
                 <Save className="h-4 w-4 mr-2" />
