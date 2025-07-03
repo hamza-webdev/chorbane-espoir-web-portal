@@ -512,7 +512,7 @@ const TeamComposition = () => {
         ))}
       </div>
 
-      {/* Football field with staff beside it */}
+      {/* Football stadium with staff beside it */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
         {/* Staff members (left side) */}
         <div className="lg:col-span-2 order-2 lg:order-1">
@@ -547,93 +547,127 @@ const TeamComposition = () => {
           </Card>
         </div>
 
-        {/* Football field with stadium background */}
+        {/* Football stadium with realistic view from above */}
         <Card className="lg:col-span-8 order-1 lg:order-2 mx-auto max-w-2xl shadow-2xl overflow-hidden">
           <CardContent className="p-2 sm:p-3">
             <div 
               className={`relative rounded-lg overflow-hidden ${isDragging ? 'ring-2 ring-blue-400' : ''}`}
               style={{ 
                 aspectRatio: '1.5/1.8', 
-                cursor: isDragging ? 'grabbing' : 'default',
-                backgroundImage: `url('https://images.unsplash.com/photo-1433086966358-54859d0ed716?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80')`,
-                backgroundSize: 'cover',
-                backgroundPosition: 'center',
-                backgroundRepeat: 'no-repeat'
+                cursor: isDragging ? 'grabbing' : 'default'
               }}
               onDragOver={handleDragOver}
               onDrop={handleDrop}
             >
-              {/* Green field overlay with transparency */}
-              <div className="absolute inset-0 bg-green-500/80 rounded-lg"></div>
-              
-              {/* Field markings */}
-              <svg className="absolute inset-0 w-full h-full z-10" viewBox="0 0 200 300">
-                {/* Outer lines */}
-                <rect x="10" y="10" width="180" height="280" fill="none" stroke="white" strokeWidth="2"/>
-                <circle cx="100" cy="150" r="30" fill="none" stroke="white" strokeWidth="2"/>
-                <circle cx="100" cy="150" r="2" fill="white"/>
-                <line x1="10" y1="150" x2="190" y2="150" stroke="white" strokeWidth="2"/>
-                <rect x="70" y="10" width="60" height="18" fill="none" stroke="white" strokeWidth="2"/>
-                <rect x="70" y="272" width="60" height="18" fill="none" stroke="white" strokeWidth="2"/>
-                <rect x="50" y="10" width="100" height="44" fill="none" stroke="white" strokeWidth="2"/>
-                <rect x="50" y="246" width="100" height="44" fill="none" stroke="white" strokeWidth="2"/>
-                <circle cx="100" cy="32" r="2" fill="white"/>
-                <circle cx="100" cy="268" r="2" fill="white"/>
-                <rect x="85" y="5" width="30" height="5" fill="none" stroke="white" strokeWidth="2"/>
-                <rect x="85" y="290" width="30" height="5" fill="none" stroke="white" strokeWidth="2"/>
-              </svg>
+              {/* Stadium structure with CSS gradients */}
+              <div className="absolute inset-0 bg-gradient-to-br from-gray-800 via-gray-700 to-gray-900 rounded-lg">
+                {/* Stadium stands */}
+                <div className="absolute inset-0 bg-gradient-to-br from-gray-600 via-gray-500 to-gray-700 rounded-lg"></div>
+                
+                {/* Inner stadium border */}
+                <div className="absolute inset-4 bg-gradient-to-br from-green-800 via-green-700 to-green-900 rounded-lg border-4 border-gray-600 shadow-inner">
+                  
+                  {/* Football field */}
+                  <div className="absolute inset-2 bg-gradient-to-br from-green-500 via-green-600 to-green-700 rounded-lg shadow-2xl">
+                    
+                    {/* Field pattern for realistic grass texture */}
+                    <div className="absolute inset-0 opacity-20">
+                      <div className="h-full w-full bg-gradient-to-r from-green-600 to-green-500 bg-[length:20px_20px] opacity-30"></div>
+                      <div className="absolute inset-0 bg-[linear-gradient(90deg,transparent_49%,rgba(0,0,0,0.1)_50%,transparent_51%)] bg-[length:40px_40px]"></div>
+                    </div>
+                    
+                    {/* Stadium lights effect */}
+                    <div className="absolute inset-0 bg-gradient-radial from-transparent via-transparent to-black/10 rounded-lg"></div>
+                    
+                    {/* Field markings */}
+                    <svg className="absolute inset-0 w-full h-full z-10" viewBox="0 0 200 300">
+                      {/* Outer lines */}
+                      <rect x="10" y="10" width="180" height="280" fill="none" stroke="white" strokeWidth="2" opacity="0.9"/>
+                      
+                      {/* Center circle */}
+                      <circle cx="100" cy="150" r="30" fill="none" stroke="white" strokeWidth="2" opacity="0.9"/>
+                      <circle cx="100" cy="150" r="2" fill="white" opacity="0.9"/>
+                      
+                      {/* Center line */}
+                      <line x1="10" y1="150" x2="190" y2="150" stroke="white" strokeWidth="2" opacity="0.9"/>
+                      
+                      {/* Goal areas */}
+                      <rect x="70" y="10" width="60" height="18" fill="none" stroke="white" strokeWidth="2" opacity="0.9"/>
+                      <rect x="70" y="272" width="60" height="18" fill="none" stroke="white" strokeWidth="2" opacity="0.9"/>
+                      
+                      {/* Penalty areas */}
+                      <rect x="50" y="10" width="100" height="44" fill="none" stroke="white" strokeWidth="2" opacity="0.9"/>
+                      <rect x="50" y="246" width="100" height="44" fill="none" stroke="white" strokeWidth="2" opacity="0.9"/>
+                      
+                      {/* Penalty spots */}
+                      <circle cx="100" cy="32" r="2" fill="white" opacity="0.9"/>
+                      <circle cx="100" cy="268" r="2" fill="white" opacity="0.9"/>
+                      
+                      {/* Goals */}
+                      <rect x="85" y="5" width="30" height="5" fill="none" stroke="white" strokeWidth="2" opacity="0.9"/>
+                      <rect x="85" y="290" width="30" height="5" fill="none" stroke="white" strokeWidth="2" opacity="0.9"/>
+                      
+                      {/* Corner arcs */}
+                      <path d="M 10 10 Q 20 10 20 20" fill="none" stroke="white" strokeWidth="2" opacity="0.9"/>
+                      <path d="M 190 10 Q 180 10 180 20" fill="none" stroke="white" strokeWidth="2" opacity="0.9"/>
+                      <path d="M 10 290 Q 20 290 20 280" fill="none" stroke="white" strokeWidth="2" opacity="0.9"/>
+                      <path d="M 190 290 Q 180 290 180 280" fill="none" stroke="white" strokeWidth="2" opacity="0.9"/>
+                    </svg>
 
-              {/* Drop zone indicator */}
-              {isDragging && (
-                <div className="absolute inset-0 bg-blue-400/20 border-2 border-dashed border-blue-400 rounded-lg flex items-center justify-center z-20">
-                  <div className="text-white bg-blue-600 px-4 py-2 rounded-lg font-medium">
-                    Déposez le joueur ici
+                    {/* Drop zone indicator */}
+                    {isDragging && (
+                      <div className="absolute inset-0 bg-blue-400/20 border-2 border-dashed border-blue-400 rounded-lg flex items-center justify-center z-20">
+                        <div className="text-white bg-blue-600 px-4 py-2 rounded-lg font-medium shadow-lg">
+                          Déposez le joueur ici
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Players */}
+                    {assignedPlayers.map(({ player, position }, index) => {
+                      const isCustomPositioned = playerPositions.some(p => p.playerId === player.id);
+                      return (
+                        <div
+                          key={player.id}
+                          className={`absolute transform -translate-x-1/2 -translate-y-1/2 cursor-grab active:cursor-grabbing transition-all duration-500 z-30 ${
+                            animateIn ? 'opacity-100 scale-100' : 'opacity-0 scale-75'
+                          } ${isCustomPositioned ? 'ring-2 ring-yellow-400 ring-opacity-80' : ''}`}
+                          style={{
+                            left: `${position.x}%`,
+                            top: `${position.y}%`,
+                            animationDelay: `${index * 100}ms`
+                          }}
+                          onClick={() => setSelectedPlayer(player)}
+                          draggable
+                          onDragStart={(e) => handleDragStart(e, player)}
+                          onDragEnd={handleDragEnd}
+                        >
+                          <div className="flex flex-col items-center group hover:scale-110 transition-transform duration-200">
+                            <div className="relative">
+                              <Avatar className="h-6 w-6 sm:h-8 sm:w-8 border-2 border-white shadow-lg bg-white">
+                                <AvatarImage src={player.photo || undefined} alt={player.name} />
+                                <AvatarFallback className="bg-green-700 text-white text-xs">
+                                  <Shirt className="h-3 w-3 sm:h-4 sm:w-4" />
+                                </AvatarFallback>
+                              </Avatar>
+                              {player.jersey_number && (
+                                <Badge className="absolute -bottom-1 -right-1 h-4 w-4 sm:h-5 sm:w-5 rounded-full bg-blue-600 text-white text-xs flex items-center justify-center p-0 border border-white">
+                                  {player.jersey_number}
+                                </Badge>
+                              )}
+                            </div>
+                            <div className="mt-1 text-center">
+                              <p className="text-white text-xs font-medium shadow-lg bg-black/60 px-2 py-1 rounded backdrop-blur-sm">
+                                {player.name.split(' ').slice(-1)[0]}
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
                   </div>
                 </div>
-              )}
-
-              {/* Players */}
-              {assignedPlayers.map(({ player, position }, index) => {
-                const isCustomPositioned = playerPositions.some(p => p.playerId === player.id);
-                return (
-                  <div
-                    key={player.id}
-                    className={`absolute transform -translate-x-1/2 -translate-y-1/2 cursor-grab active:cursor-grabbing transition-all duration-500 z-30 ${
-                      animateIn ? 'opacity-100 scale-100' : 'opacity-0 scale-75'
-                    } ${isCustomPositioned ? 'ring-2 ring-yellow-400' : ''}`}
-                    style={{
-                      left: `${position.x}%`,
-                      top: `${position.y}%`,
-                      animationDelay: `${index * 100}ms`
-                    }}
-                    onClick={() => setSelectedPlayer(player)}
-                    draggable
-                    onDragStart={(e) => handleDragStart(e, player)}
-                    onDragEnd={handleDragEnd}
-                  >
-                    <div className="flex flex-col items-center group hover:scale-110 transition-transform duration-200">
-                      <div className="relative">
-                        <Avatar className="h-5 w-5 sm:h-8 sm:w-8 border-2 border-white shadow-lg bg-white">
-                          <AvatarImage src={player.photo || undefined} alt={player.name} />
-                          <AvatarFallback className="bg-green-700 text-white text-xs">
-                            <Shirt className="h-2 w-2 sm:h-3 sm:w-3" />
-                          </AvatarFallback>
-                        </Avatar>
-                        {player.jersey_number && (
-                          <Badge className="absolute -bottom-1 -right-1 h-2 w-2 sm:h-3 sm:w-3 rounded-full bg-blue-600 text-white text-xs flex items-center justify-center p-0 border border-white">
-                            {player.jersey_number}
-                          </Badge>
-                        )}
-                      </div>
-                      <div className="mt-1 text-center">
-                        <p className="text-white text-xs font-medium shadow-lg bg-black/50 px-1 rounded backdrop-blur-sm">
-                          {player.name.split(' ').slice(-1)[0]}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
+              </div>
             </div>
           </CardContent>
         </Card>
@@ -774,7 +808,7 @@ const TeamComposition = () => {
                 <p className="text-sm text-gray-600 mb-2">Biographie</p>
                 <p className="text-sm leading-relaxed">{selectedPlayer.bio}</p>
               </div>
-              )}
+            )}
           </div>
         </DialogContent>
       </Dialog>
