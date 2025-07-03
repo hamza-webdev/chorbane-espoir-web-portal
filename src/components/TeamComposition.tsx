@@ -9,7 +9,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Users, Shirt, Save, Plus } from "lucide-react";
+import { Users, Shirt, Save, Plus, User } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 interface Player {
@@ -21,6 +21,14 @@ interface Player {
   age: number | null;
   height: number | null;
   weight: number | null;
+  bio: string | null;
+}
+
+interface Staff {
+  id: string;
+  name: string;
+  role: string;
+  photo: string | null;
   bio: string | null;
 }
 
@@ -141,6 +149,21 @@ const TeamComposition = () => {
     }
   });
 
+  const { data: staff } = useQuery({
+    queryKey: ['staff-composition'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('staff')
+        .select('*')
+        .eq('active', true)
+        .in('role', ['entraineur', 'manager'])
+        .order('role', { ascending: true });
+      
+      if (error) throw error;
+      return data as Staff[];
+    }
+  });
+
   const { data: savedCompositions } = useQuery({
     queryKey: ['saved-compositions'],
     queryFn: async () => {
@@ -199,6 +222,15 @@ const TeamComposition = () => {
     setDraggedPlayer(player);
     setIsDragging(true);
     e.dataTransfer.effectAllowed = 'move';
+    // Curseur personnalisé pendant le drag
+    const dragImage = document.createElement('div');
+    dragImage.innerHTML = '⚽';
+    dragImage.style.fontSize = '24px';
+    dragImage.style.position = 'absolute';
+    dragImage.style.top = '-1000px';
+    document.body.appendChild(dragImage);
+    e.dataTransfer.setDragImage(dragImage, 12, 12);
+    setTimeout(() => document.body.removeChild(dragImage), 0);
   };
 
   const handleDragEnd = () => {
@@ -275,6 +307,14 @@ const TeamComposition = () => {
     return positions[position] || position;
   };
 
+  const getRoleLabel = (role: string) => {
+    const roles = {
+      'entraineur': 'Entraîneur',
+      'manager': 'Président'
+    };
+    return roles[role] || role;
+  };
+
   const handleSaveComposition = () => {
     if (!compositionTitle.trim()) {
       toast({
@@ -325,6 +365,8 @@ const TeamComposition = () => {
   }
 
   const assignedPlayers = assignPlayersToPositions();
+  const allAssignedPlayerIds = assignedPlayers.map(ap => ap.player.id);
+  const availablePlayers = players?.filter(player => !allAssignedPlayerIds.includes(player.id)) || [];
 
   return (
     <div className="space-y-6">
@@ -392,18 +434,169 @@ const TeamComposition = () => {
         ))}
       </div>
 
-      {/* Available players */}
+      {/* Football field with staff beside it */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+        {/* Staff members (left side) */}
+        <div className="lg:col-span-2 order-2 lg:order-1">
+          <Card>
+            <CardContent className="p-4">
+              <h3 className="text-sm font-semibold mb-3 text-center">Banc de touche</h3>
+              <div className="space-y-3">
+                {staff?.map((member) => (
+                  <div
+                    key={member.id}
+                    draggable
+                    onDragStart={(e) => handleDragStart(e, member as any)}
+                    onDragEnd={handleDragEnd}
+                    className="flex flex-col items-center p-2 border rounded-lg cursor-move hover:bg-gray-50 transition-colors bg-blue-50 border-blue-200"
+                  >
+                    <Avatar className="h-10 w-10 mb-2">
+                      <AvatarImage src={member.photo || undefined} alt={member.name} />
+                      <AvatarFallback className="bg-blue-700 text-white">
+                        <User className="h-5 w-5" />
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="text-center">
+                      <p className="text-xs font-medium truncate w-full">{member.name}</p>
+                      <Badge variant="outline" className="text-xs mt-1 bg-blue-100">
+                        {getRoleLabel(member.role)}
+                      </Badge>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Football field - Reduced size by 25% */}
+        <Card className="lg:col-span-8 order-1 lg:order-2 mx-auto max-w-3xl bg-green-600 shadow-2xl">
+          <CardContent className="p-3 sm:p-4">
+            <div 
+              className={`relative bg-green-500 rounded-lg overflow-hidden ${isDragging ? 'ring-2 ring-blue-400' : ''}`}
+              style={{ aspectRatio: '1.5/2.25', cursor: isDragging ? 'grabbing' : 'default' }}
+              onDragOver={handleDragOver}
+              onDrop={handleDrop}
+            >
+              {/* Field markings */}
+              <svg className="absolute inset-0 w-full h-full" viewBox="0 0 200 300">
+                {/* Outer lines */}
+                <rect x="10" y="10" width="180" height="280" fill="none" stroke="white" strokeWidth="2"/>
+                <circle cx="100" cy="150" r="30" fill="none" stroke="white" strokeWidth="2"/>
+                <circle cx="100" cy="150" r="2" fill="white"/>
+                <line x1="10" y1="150" x2="190" y2="150" stroke="white" strokeWidth="2"/>
+                <rect x="70" y="10" width="60" height="18" fill="none" stroke="white" strokeWidth="2"/>
+                <rect x="70" y="272" width="60" height="18" fill="none" stroke="white" strokeWidth="2"/>
+                <rect x="50" y="10" width="100" height="44" fill="none" stroke="white" strokeWidth="2"/>
+                <rect x="50" y="246" width="100" height="44" fill="none" stroke="white" strokeWidth="2"/>
+                <circle cx="100" cy="32" r="2" fill="white"/>
+                <circle cx="100" cy="268" r="2" fill="white"/>
+                <rect x="85" y="5" width="30" height="5" fill="none" stroke="white" strokeWidth="2"/>
+                <rect x="85" y="290" width="30" height="5" fill="none" stroke="white" strokeWidth="2"/>
+              </svg>
+
+              {/* Drop zone indicator */}
+              {isDragging && (
+                <div className="absolute inset-0 bg-blue-400/20 border-2 border-dashed border-blue-400 rounded-lg flex items-center justify-center">
+                  <div className="text-white bg-blue-600 px-4 py-2 rounded-lg font-medium">
+                    Déposez le joueur ici
+                  </div>
+                </div>
+              )}
+
+              {/* Players */}
+              {assignedPlayers.map(({ player, position }, index) => {
+                const isCustomPositioned = playerPositions.some(p => p.playerId === player.id);
+                return (
+                  <div
+                    key={player.id}
+                    className={`absolute transform -translate-x-1/2 -translate-y-1/2 cursor-grab active:cursor-grabbing transition-all duration-500 ${
+                      animateIn ? 'opacity-100 scale-100' : 'opacity-0 scale-75'
+                    } ${isCustomPositioned ? 'ring-2 ring-yellow-400' : ''}`}
+                    style={{
+                      left: `${position.x}%`,
+                      top: `${position.y}%`,
+                      animationDelay: `${index * 100}ms`
+                    }}
+                    onClick={() => setSelectedPlayer(player)}
+                    draggable
+                    onDragStart={(e) => handleDragStart(e, player)}
+                    onDragEnd={handleDragEnd}
+                  >
+                    <div className="flex flex-col items-center group hover:scale-110 transition-transform duration-200">
+                      <div className="relative">
+                        <Avatar className="h-6 w-6 sm:h-10 sm:w-10 border-2 border-white shadow-lg bg-white">
+                          <AvatarImage src={player.photo || undefined} alt={player.name} />
+                          <AvatarFallback className="bg-green-700 text-white text-xs">
+                            <Shirt className="h-2 w-2 sm:h-3 sm:w-3" />
+                          </AvatarFallback>
+                        </Avatar>
+                        {player.jersey_number && (
+                          <Badge className="absolute -bottom-1 -right-1 h-3 w-3 sm:h-4 sm:w-4 rounded-full bg-blue-600 text-white text-xs flex items-center justify-center p-0 border border-white">
+                            {player.jersey_number}
+                          </Badge>
+                        )}
+                      </div>
+                      <div className="mt-1 text-center">
+                        <p className="text-white text-xs font-medium shadow-lg bg-black/30 px-1 rounded backdrop-blur-sm">
+                          {player.name.split(' ').slice(-1)[0]}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Substitutes (right side) */}
+        <div className="lg:col-span-2 order-3">
+          <Card>
+            <CardContent className="p-4">
+              <h3 className="text-sm font-semibold mb-3 text-center">Remplaçants</h3>
+              <div className="space-y-3">
+                {availablePlayers.slice(0, 7).map((player) => (
+                  <div
+                    key={player.id}
+                    draggable
+                    onDragStart={(e) => handleDragStart(e, player)}
+                    onDragEnd={handleDragEnd}
+                    className="flex flex-col items-center p-2 border rounded-lg cursor-move hover:bg-gray-50 transition-colors bg-orange-50 border-orange-200"
+                  >
+                    <Avatar className="h-10 w-10 mb-2">
+                      <AvatarImage src={player.photo || undefined} alt={player.name} />
+                      <AvatarFallback className="bg-orange-700 text-white">
+                        <Shirt className="h-5 w-5" />
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="text-center">
+                      <p className="text-xs font-medium truncate w-full">{player.name}</p>
+                      <Badge variant="outline" className="text-xs mt-1 bg-orange-100">
+                        #{player.jersey_number || 'N/A'}
+                      </Badge>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+
+      {/* Available players - Moved below the field */}
       <Card>
         <CardContent className="p-4">
           <h3 className="text-lg font-semibold mb-4">Joueurs disponibles</h3>
           <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 gap-4">
-            {players?.map((player) => (
+            {availablePlayers.map((player) => (
               <div
                 key={player.id}
                 draggable
                 onDragStart={(e) => handleDragStart(e, player)}
                 onDragEnd={handleDragEnd}
                 className="flex flex-col items-center p-2 border rounded-lg cursor-move hover:bg-gray-50 transition-colors"
+                style={{ cursor: isDragging && draggedPlayer?.id === player.id ? 'grabbing' : 'grab' }}
               >
                 <Avatar className="h-12 w-12 mb-2">
                   <AvatarImage src={player.photo || undefined} alt={player.name} />
@@ -419,87 +612,6 @@ const TeamComposition = () => {
                 </div>
               </div>
             ))}
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Football field - Reduced size by 25% */}
-      <Card className="mx-auto max-w-3xl bg-green-600 shadow-2xl">
-        <CardContent className="p-3 sm:p-4">
-          <div 
-            className={`relative bg-green-500 rounded-lg overflow-hidden ${isDragging ? 'ring-2 ring-blue-400' : ''}`}
-            style={{ aspectRatio: '1.5/2.25' }}
-            onDragOver={handleDragOver}
-            onDrop={handleDrop}
-          >
-            {/* Field markings */}
-            <svg className="absolute inset-0 w-full h-full" viewBox="0 0 200 300">
-              {/* Outer lines */}
-              <rect x="10" y="10" width="180" height="280" fill="none" stroke="white" strokeWidth="2"/>
-              <circle cx="100" cy="150" r="30" fill="none" stroke="white" strokeWidth="2"/>
-              <circle cx="100" cy="150" r="2" fill="white"/>
-              <line x1="10" y1="150" x2="190" y2="150" stroke="white" strokeWidth="2"/>
-              <rect x="70" y="10" width="60" height="18" fill="none" stroke="white" strokeWidth="2"/>
-              <rect x="70" y="272" width="60" height="18" fill="none" stroke="white" strokeWidth="2"/>
-              <rect x="50" y="10" width="100" height="44" fill="none" stroke="white" strokeWidth="2"/>
-              <rect x="50" y="246" width="100" height="44" fill="none" stroke="white" strokeWidth="2"/>
-              <circle cx="100" cy="32" r="2" fill="white"/>
-              <circle cx="100" cy="268" r="2" fill="white"/>
-              <rect x="85" y="5" width="30" height="5" fill="none" stroke="white" strokeWidth="2"/>
-              <rect x="85" y="290" width="30" height="5" fill="none" stroke="white" strokeWidth="2"/>
-            </svg>
-
-            {/* Drop zone indicator */}
-            {isDragging && (
-              <div className="absolute inset-0 bg-blue-400/20 border-2 border-dashed border-blue-400 rounded-lg flex items-center justify-center">
-                <div className="text-white bg-blue-600 px-4 py-2 rounded-lg font-medium">
-                  Déposez le joueur ici
-                </div>
-              </div>
-            )}
-
-            {/* Players */}
-            {assignedPlayers.map(({ player, position }, index) => {
-              const isCustomPositioned = playerPositions.some(p => p.playerId === player.id);
-              return (
-                <div
-                  key={player.id}
-                  className={`absolute transform -translate-x-1/2 -translate-y-1/2 cursor-pointer transition-all duration-500 ${
-                    animateIn ? 'opacity-100 scale-100' : 'opacity-0 scale-75'
-                  } ${isCustomPositioned ? 'ring-2 ring-yellow-400' : ''}`}
-                  style={{
-                    left: `${position.x}%`,
-                    top: `${position.y}%`,
-                    animationDelay: `${index * 100}ms`
-                  }}
-                  onClick={() => setSelectedPlayer(player)}
-                  draggable
-                  onDragStart={(e) => handleDragStart(e, player)}
-                  onDragEnd={handleDragEnd}
-                >
-                  <div className="flex flex-col items-center group hover:scale-110 transition-transform duration-200">
-                    <div className="relative">
-                      <Avatar className="h-6 w-6 sm:h-10 sm:w-10 border-2 border-white shadow-lg bg-white">
-                        <AvatarImage src={player.photo || undefined} alt={player.name} />
-                        <AvatarFallback className="bg-green-700 text-white text-xs">
-                          <Shirt className="h-2 w-2 sm:h-3 sm:w-3" />
-                        </AvatarFallback>
-                      </Avatar>
-                      {player.jersey_number && (
-                        <Badge className="absolute -bottom-1 -right-1 h-3 w-3 sm:h-4 sm:w-4 rounded-full bg-blue-600 text-white text-xs flex items-center justify-center p-0 border border-white">
-                          {player.jersey_number}
-                        </Badge>
-                      )}
-                    </div>
-                    <div className="mt-1 text-center">
-                      <p className="text-white text-xs font-medium shadow-lg bg-black/30 px-1 rounded backdrop-blur-sm">
-                        {player.name.split(' ').slice(-1)[0]}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              );
-            })}
           </div>
         </CardContent>
       </Card>
